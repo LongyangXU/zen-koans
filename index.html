@@ -1,0 +1,917 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>禅·境 — 禅宗公案数字藏经阁</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;600;700;900&family=Noto+Sans+SC:wght@300;400;500;700&family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
+<style>
+:root {
+  --ink-black: #08080c;
+  --ink-deep: #0d0d14;
+  --ink-card: #13131f;
+  --ink-border: #1e1e32;
+  --gold: #c9a84c;
+  --gold-dim: #8b7340;
+  --gold-bright: #e8c860;
+  --cyan: #5eead4;
+  --cyan-dim: #0d9488;
+  --text-primary: #e0ddd5;
+  --text-secondary: #9a9790;
+  --text-dim: #5c5a55;
+  --red-accent: #c24141;
+  --red-soft: #8b4545;
+  --font-display: 'Noto Serif SC', serif;
+  --font-body: 'Noto Sans SC', sans-serif;
+  --font-latin: 'Cormorant Garamond', serif;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+html { scroll-behavior: smooth; }
+body {
+  background: var(--ink-black);
+  color: var(--text-primary);
+  font-family: var(--font-body);
+  overflow-x: hidden;
+  line-height: 1.7;
+}
+
+/* Ink wash background canvas */
+#inkCanvas {
+  position: fixed;
+  top: 0; left: 0;
+  width: 100%; height: 100%;
+  z-index: 0;
+  pointer-events: none;
+  opacity: 0.35;
+}
+
+/* Floating particles */
+.particle {
+  position: fixed;
+  pointer-events: none;
+  z-index: 1;
+  font-family: var(--font-display);
+  color: var(--gold-dim);
+  opacity: 0;
+  animation: floatUp 15s linear infinite;
+  font-size: 14px;
+}
+@keyframes floatUp {
+  0% { opacity: 0; transform: translateY(100vh) rotate(0deg); }
+  10% { opacity: 0.6; }
+  90% { opacity: 0.3; }
+  100% { opacity: 0; transform: translateY(-10vh) rotate(360deg); }
+}
+
+/* Main container */
+.main-container {
+  position: relative;
+  z-index: 10;
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 0 24px;
+}
+
+/* Navigation */
+.nav {
+  position: fixed;
+  top: 0; left: 0; right: 0;
+  z-index: 100;
+  background: rgba(8,8,12,0.85);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-bottom: 1px solid var(--ink-border);
+  padding: 0 24px;
+}
+.nav-inner {
+  max-width: 1100px;
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 56px;
+}
+.nav-logo {
+  font-family: var(--font-display);
+  font-size: 22px;
+  font-weight: 900;
+  color: var(--gold);
+  letter-spacing: 4px;
+  text-decoration: none;
+  display: flex; align-items: center; gap: 8px;
+}
+.nav-logo .dot {
+  width: 6px; height: 6px;
+  background: var(--cyan);
+  border-radius: 50%;
+  animation: pulse 2s ease-in-out infinite;
+}
+@keyframes pulse {
+  0%, 100% { opacity: 0.4; box-shadow: 0 0 4px var(--cyan); }
+  50% { opacity: 1; box-shadow: 0 0 12px var(--cyan); }
+}
+.nav-links { display: flex; gap: 28px; align-items: center; }
+.nav-links a {
+  color: var(--text-secondary);
+  text-decoration: none;
+  font-size: 13px;
+  font-weight: 500;
+  letter-spacing: 2px;
+  transition: color 0.3s;
+  position: relative;
+  cursor: pointer;
+}
+.nav-links a:hover { color: var(--gold); }
+.nav-links a::after {
+  content: '';
+  position: absolute;
+  bottom: -4px; left: 50%;
+  transform: translateX(-50%);
+  width: 0; height: 1px;
+  background: var(--gold);
+  transition: width 0.3s;
+}
+.nav-links a:hover::after { width: 100%; }
+
+/* Hero */
+.hero {
+  padding: 150px 0 70px;
+  text-align: center;
+  position: relative;
+}
+.hero-badge {
+  display: inline-block;
+  padding: 6px 16px;
+  border: 1px solid var(--gold-dim);
+  border-radius: 20px;
+  font-size: 11px;
+  letter-spacing: 3px;
+  color: var(--gold);
+  margin-bottom: 32px;
+  font-weight: 500;
+}
+.hero h1 {
+  font-family: var(--font-display);
+  font-size: clamp(48px, 8vw, 80px);
+  font-weight: 900;
+  color: var(--text-primary);
+  letter-spacing: 8px;
+  margin-bottom: 16px;
+  line-height: 1.2;
+}
+.hero h1 .accent { color: var(--gold); }
+.hero-subtitle {
+  font-size: 15px;
+  color: var(--text-secondary);
+  letter-spacing: 6px;
+  font-weight: 300;
+  margin-bottom: 48px;
+}
+
+/* Daily Recommendation Card */
+.daily-card {
+  background: linear-gradient(135deg, rgba(201,168,76,0.08), rgba(94,234,212,0.04));
+  border: 1px solid var(--gold-dim);
+  border-radius: 16px;
+  padding: 48px 40px;
+  margin-bottom: 60px;
+  position: relative;
+  overflow: hidden;
+  transition: all 0.4s;
+  cursor: pointer;
+}
+.daily-card:hover {
+  border-color: var(--gold);
+  box-shadow: 0 0 60px rgba(201,168,76,0.1), inset 0 0 60px rgba(201,168,76,0.03);
+}
+.daily-card::before {
+  content: '';
+  position: absolute;
+  top: -50%; right: -50%;
+  width: 200px; height: 200px;
+  background: radial-gradient(circle, rgba(94,234,212,0.08), transparent);
+  pointer-events: none;
+}
+.daily-label {
+  display: flex; align-items: center; gap: 10px;
+  margin-bottom: 24px;
+  justify-content: center;
+}
+.daily-label .icon {
+  width: 8px; height: 8px;
+  background: var(--cyan);
+  border-radius: 50%;
+  animation: pulse 2s ease-in-out infinite;
+}
+.daily-label span {
+  font-size: 12px;
+  letter-spacing: 4px;
+  color: var(--cyan);
+  font-weight: 500;
+}
+.daily-card h2 {
+  font-family: var(--font-display);
+  font-size: clamp(26px, 5vw, 40px);
+  font-weight: 700;
+  color: var(--gold-bright);
+  margin-bottom: 20px;
+  letter-spacing: 3px;
+  text-align: center;
+}
+.daily-card .daily-story {
+  font-size: 15px;
+  color: var(--text-secondary);
+  line-height: 1.9;
+  max-width: 650px;
+  margin: 0 auto;
+  text-align: center;
+}
+.daily-card .daily-meta {
+  display: flex; gap: 16px; justify-content: center;
+  margin-top: 28px;
+  flex-wrap: wrap;
+}
+.daily-tag {
+  padding: 4px 14px;
+  border: 1px solid var(--ink-border);
+  border-radius: 12px;
+  font-size: 12px;
+  color: var(--text-secondary);
+  letter-spacing: 1px;
+}
+
+/* Search Section */
+.search-section {
+  margin-bottom: 40px;
+}
+.search-wrapper {
+  position: relative;
+  max-width: 600px;
+  margin: 0 auto;
+}
+.search-input {
+  width: 100%;
+  padding: 15px 48px 15px 20px;
+  background: var(--ink-card);
+  border: 1px solid var(--ink-border);
+  border-radius: 12px;
+  color: var(--text-primary);
+  font-size: 15px;
+  font-family: var(--font-body);
+  letter-spacing: 1px;
+  transition: all 0.3s;
+  outline: none;
+}
+.search-input:focus {
+  border-color: var(--gold-dim);
+  box-shadow: 0 0 30px rgba(201,168,76,0.08);
+}
+.search-input::placeholder { color: var(--text-dim); }
+.search-icon {
+  position: absolute;
+  right: 16px; top: 50%;
+  transform: translateY(-50%);
+  color: var(--text-dim);
+  font-size: 18px;
+  pointer-events: none;
+}
+
+/* Filter Bar */
+.filter-bar {
+  display: flex; gap: 10px; flex-wrap: wrap;
+  justify-content: center;
+  margin-bottom: 20px;
+}
+.filter-btn {
+  padding: 7px 18px;
+  background: transparent;
+  border: 1px solid var(--ink-border);
+  border-radius: 20px;
+  color: var(--text-secondary);
+  cursor: pointer;
+  font-size: 13px;
+  font-family: var(--font-body);
+  letter-spacing: 1px;
+  transition: all 0.3s;
+  white-space: nowrap;
+}
+.filter-btn:hover { border-color: var(--gold-dim); color: var(--text-primary); }
+.filter-btn.active {
+  background: rgba(201,168,76,0.12);
+  border-color: var(--gold);
+  color: var(--gold);
+}
+
+/* Score filter */
+.score-filters {
+  display: flex; gap: 8px; flex-wrap: wrap;
+  justify-content: center;
+  margin-bottom: 32px;
+}
+.score-btn {
+  width: 34px; height: 34px;
+  border-radius: 50%;
+  background: transparent;
+  border: 1px solid var(--ink-border);
+  color: var(--text-dim);
+  cursor: pointer;
+  font-size: 13px;
+  font-family: var(--font-latin);
+  transition: all 0.3s;
+  display: flex; align-items: center; justify-content: center;
+}
+.score-btn:hover { border-color: var(--cyan-dim); color: var(--cyan); }
+.score-btn.active {
+  background: rgba(94,234,212,0.12);
+  border-color: var(--cyan);
+  color: var(--cyan);
+  box-shadow: 0 0 12px rgba(94,234,212,0.15);
+}
+
+/* Results count */
+.results-count {
+  text-align: center;
+  margin-bottom: 28px;
+  font-size: 12px;
+  color: var(--text-dim);
+  letter-spacing: 2px;
+}
+
+/* Koan Grid */
+.koans-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 18px;
+  margin-bottom: 80px;
+}
+
+.koan-card {
+  background: var(--ink-card);
+  border: 1px solid var(--ink-border);
+  border-radius: 12px;
+  padding: 26px 22px;
+  cursor: pointer;
+  transition: all 0.3s;
+  position: relative;
+  overflow: hidden;
+}
+.koan-card:hover {
+  border-color: var(--gold-dim);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 40px rgba(0,0,0,0.4);
+}
+.koan-card::after {
+  content: '';
+  position: absolute;
+  top: 0; left: 0;
+  width: 100%; height: 2px;
+  background: linear-gradient(90deg, transparent, var(--gold-dim), transparent);
+  opacity: 0;
+  transition: opacity 0.3s;
+}
+.koan-card:hover::after { opacity: 1; }
+.koan-card .card-header {
+  display: flex; justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 12px;
+  gap: 8px;
+}
+.koan-card .card-num {
+  font-family: var(--font-latin);
+  font-size: 13px;
+  color: var(--text-dim);
+  white-space: nowrap;
+}
+.koan-card .card-score {
+  display: flex; gap: 2px;
+}
+.koan-card .score-dot {
+  width: 6px; height: 6px;
+  border-radius: 50%;
+  background: var(--ink-border);
+}
+.koan-card .score-dot.filled { background: var(--gold-dim); }
+.koan-card .score-dot.filled.high { background: var(--cyan-dim); }
+.koan-card h3 {
+  font-family: var(--font-display);
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin-bottom: 10px;
+  letter-spacing: 2px;
+}
+.koan-card .card-story {
+  font-size: 13px;
+  color: var(--text-secondary);
+  line-height: 1.8;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+.koan-card .card-collection {
+  margin-top: 14px;
+  font-size: 11px;
+  color: var(--text-dim);
+  letter-spacing: 2px;
+}
+
+/* Modal */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.85);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  z-index: 200;
+  display: flex; align-items: center; justify-content: center;
+  padding: 24px;
+  animation: fadeIn 0.3s ease;
+}
+@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+.modal {
+  background: var(--ink-deep);
+  border: 1px solid var(--ink-border);
+  border-radius: 20px;
+  max-width: 640px;
+  width: 100%;
+  max-height: 85vh;
+  overflow-y: auto;
+  padding: 40px 36px;
+  position: relative;
+  animation: slideUp 0.4s ease;
+}
+@keyframes slideUp { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }
+.modal-close {
+  position: absolute;
+  top: 16px; right: 20px;
+  background: none; border: none;
+  color: var(--text-dim);
+  font-size: 24px;
+  cursor: pointer;
+  transition: color 0.3s;
+  font-family: var(--font-latin);
+  line-height: 1;
+}
+.modal-close:hover { color: var(--text-primary); }
+.modal .modal-collection {
+  font-size: 12px;
+  letter-spacing: 3px;
+  color: var(--gold);
+  margin-bottom: 12px;
+}
+.modal h2 {
+  font-family: var(--font-display);
+  font-size: 32px;
+  font-weight: 700;
+  color: var(--gold-bright);
+  margin-bottom: 6px;
+  letter-spacing: 3px;
+}
+.modal .modal-source {
+  font-size: 13px;
+  color: var(--text-dim);
+  margin-bottom: 24px;
+  letter-spacing: 1px;
+}
+.modal .modal-section {
+  margin-bottom: 22px;
+}
+.modal .modal-section h4 {
+  font-size: 11px;
+  letter-spacing: 3px;
+  color: var(--cyan);
+  margin-bottom: 10px;
+}
+.modal .modal-section p {
+  font-size: 15px;
+  color: var(--text-secondary);
+  line-height: 2;
+}
+.modal .modal-score {
+  display: flex; align-items: center; gap: 10px;
+  margin-top: 8px;
+}
+.modal .modal-score .dots { display: flex; gap: 4px; }
+.modal .modal-score .dot {
+  width: 10px; height: 10px; border-radius: 50%;
+  background: var(--ink-border);
+}
+.modal .modal-score .dot.filled { background: var(--gold-dim); }
+
+/* Footer */
+.footer {
+  text-align: center;
+  padding: 60px 0;
+  border-top: 1px solid var(--ink-border);
+  margin-top: 40px;
+}
+.footer p {
+  font-size: 12px;
+  color: var(--text-dim);
+  letter-spacing: 3px;
+}
+
+/* Scrollbar */
+::-webkit-scrollbar { width: 4px; }
+::-webkit-scrollbar-track { background: var(--ink-black); }
+::-webkit-scrollbar-thumb { background: var(--ink-border); border-radius: 2px; }
+
+/* Toast */
+.toast {
+  position: fixed;
+  bottom: 40px; left: 50%;
+  transform: translateX(-50%);
+  background: var(--ink-card);
+  border: 1px solid var(--gold-dim);
+  color: var(--gold);
+  padding: 12px 28px;
+  border-radius: 20px;
+  font-size: 13px;
+  letter-spacing: 2px;
+  z-index: 300;
+  animation: toastIn 0.4s ease, toastOut 0.4s ease 1.6s forwards;
+}
+@keyframes toastIn { from { opacity: 0; transform: translateX(-50%) translateY(20px); } to { opacity: 1; transform: translateX(-50%) translateY(0); } }
+@keyframes toastOut { from { opacity: 1; } to { opacity: 0; } }
+
+/* Responsive */
+@media (max-width: 768px) {
+  .hero { padding: 110px 0 45px; }
+  .hero h1 { letter-spacing: 4px; }
+  .koans-grid { grid-template-columns: 1fr; }
+  .nav-links { gap: 14px; }
+  .nav-links a { font-size: 12px; letter-spacing: 1px; }
+  .daily-card { padding: 28px 18px; }
+  .modal { padding: 28px 20px; }
+  .modal h2 { font-size: 26px; }
+}
+</style>
+</head>
+<body>
+<canvas id="inkCanvas"></canvas>
+<div id="particlesContainer"></div>
+
+<nav class="nav">
+  <div class="nav-inner">
+    <a href="#" class="nav-logo" onclick="scrollToTop();return false;">禅·境<div class="dot"></div></a>
+    <div class="nav-links">
+      <a onclick="scrollToTop()">首页</a>
+      <a onclick="randomDaily()">随机推荐</a>
+      <a onclick="document.querySelector('.search-input').focus()">搜索</a>
+    </div>
+  </div>
+</nav>
+
+<div class="main-container">
+  <section class="hero" id="top">
+    <div class="hero-badge">ZEN · KOAN · DIGITAL</div>
+    <h1>禅<span class="accent">·</span>境</h1>
+    <p class="hero-subtitle">禅宗公案数字藏经阁</p>
+    
+    <div class="daily-card" id="dailyCard">
+      <div class="daily-label">
+        <div class="icon"></div>
+        <span>今日推荐公案</span>
+      </div>
+      <h2 id="dailyTitle"></h2>
+      <p class="daily-story" id="dailyStory"></p>
+      <div class="daily-meta">
+        <span class="daily-tag" id="dailyCollection"></span>
+        <span class="daily-tag" id="dailyScore"></span>
+      </div>
+    </div>
+  </section>
+
+  <section class="search-section">
+    <div class="search-wrapper">
+      <input type="text" class="search-input" placeholder="搜索公案、关键词、禅师名..." oninput="filterKoans()" id="searchInput">
+      <span class="search-icon">⌕</span>
+    </div>
+  </section>
+
+  <div class="filter-bar" id="collectionFilters"></div>
+  <div class="score-filters" id="scoreFilters"></div>
+  <div class="results-count" id="resultsCount"></div>
+  <div class="koans-grid" id="koansGrid"></div>
+
+  <footer class="footer">
+    <p>— 不立文字 · 教外别传 —</p>
+  </footer>
+</div>
+
+<div id="modalContainer"></div>
+
+<script>
+var KOANS = [{"id": "wumenguan-1", "collection": "无门关", "collectionId": "wumenguan", "number": 1, "title": "赵州狗子", "source": "《无门关》第1则；亦见《从容录》第18则系统。", "story": "僧人问赵州：“狗子还有佛性也无？”按佛教常识，一切众生皆有佛性，\n狗当然也不例外。但赵州偏偏只答一个“无”字，把僧人原本准备好的义理推理全部\n截断。", "meaning": "这个“无”不是普通的“没有”，而是禅门第一关。它让人从“有佛性 / 无\n佛性”的概念争论中掉出来，直接面对自己的分别心。", "score": 5}, {"id": "wumenguan-2", "collection": "无门关", "collectionId": "wumenguan", "number": 2, "title": "百丈野狐", "source": "《无门关》第2则；亦见《从容录》第8则。", "story": "百丈说法时常有一位老人听法。有一天老人留下，说自己过去曾答学\n人“大修行人不落因果”，因此堕为野狐五百世。百丈替他说一句“不昧因果”，老人\n当下解脱，并请百丈为狐身依亡僧礼火葬。\n禅宗公案大全：无门关卷（48则完整版）\n1", "meaning": "禅不是否定因果，也不是修行后就能逃避因果。真正的自由，是明白\n因果而不被因果迷惑。", "score": 5}, {"id": "wumenguan-3", "collection": "无门关", "collectionId": "wumenguan", "number": 3, "title": "俱胝竖指", "source": "《无门关》第3则；亦见《从容录》第84则。", "story": "俱胝和尚凡有人问法，只竖起一根手指。童子也学他竖指答人。俱胝\n听闻后斩断童子手指，童子痛哭而去；俱胝唤他回头，再竖一指，童子忽然领\n悟。", "meaning": "手指只是方便，不是法本身。模仿形式不能得道，执著形式反而会被\n形式所伤。", "score": 4}, {"id": "wumenguan-4", "collection": "无门关", "collectionId": "wumenguan", "number": 4, "title": "胡子无须", "source": "《无门关》第4则。", "story": "或庵问：“西天胡子，因甚无须？”这里的“胡子”常指达磨祖师。问题表\n面是在问形象特征，实际是在逼人离开形象和概念去识祖师。", "meaning": "若只在外貌、传说、标签上认识祖师，就永远见不到真正的祖师意。", "score": 3}, {"id": "wumenguan-5", "collection": "无门关", "collectionId": "wumenguan", "number": 5, "title": "香严上树", "source": "《无门关》第5则。", "story": "香严设下一个险境：一个人悬在树上，口衔树枝，手脚都无处攀附。\n树下有人问他祖师西来意。若开口回答，就会坠落；若不回答，又辜负了提问\n者。", "meaning": "当语言不能用、沉默也不行时，人会被逼到真正的生命关口。公案要\n人看见：答案不只是说出来的。", "score": 5}, {"id": "wumenguan-6", "collection": "无门关", "collectionId": "wumenguan", "number": 6, "title": "世尊拈花", "source": "《无门关》第6则；禅宗传灯传统。", "story": "世尊在灵山会上拈起一枝花示众，大众都不明白，唯有迦叶破颜微\n笑。世尊于是说，正法眼藏、涅槃妙心，付嘱摩诃迦叶。", "meaning": "这是禅宗“不立文字、教外别传、以心传心”的象征性源头。花没有说\n话，迦叶却懂了。", "score": 5}, {"id": "wumenguan-7", "collection": "无门关", "collectionId": "wumenguan", "number": 7, "title": "赵州洗钵", "source": "《无门关》第7则；亦见《从容录》第39则。", "story": "一位新到僧请赵州指示。赵州问他吃粥了没有，僧人说吃了。赵州只\n说：“洗钵盂去。”僧人因此有省。", "meaning": "禅不在远处，也不必先有玄妙理论。吃完饭就洗碗，日用当下即是入\n处。", "score": 5}, {"id": "wumenguan-8", "collection": "无门关", "collectionId": "wumenguan", "number": 8, "title": "奚仲造车", "source": "《无门关》第8则。", "story": "月庵问：奚仲造车一百辐，如果把两头和车轴都去掉，还能说明什么\n事？车的结构被拆掉后，问题转向“运转”的根本。", "meaning": "很多东西靠结构、名称、功能维持。一旦把这些拆开，还剩下什么？\n这是对“本质”的追问。", "score": 2}, {"id": "wumenguan-9", "collection": "无门关", "collectionId": "wumenguan", "number": 9, "title": "大通智胜", "source": "《无门关》第9则。", "story": "僧问：大通智胜佛十劫坐道场，佛法不现前，不能成佛，这是为什\n么？兴阳让说：“因为他不成佛。”", "meaning": "修行不是坐得越久越好。若执著“我要成佛”的目标，反而可能被目标挡\n住。", "score": 3}, {"id": "wumenguan-10", "collection": "无门关", "collectionId": "wumenguan", "number": 10, "title": "清税孤贫", "source": "《无门关》第10则。", "story": "清税自称孤贫，请曹山赈济。曹山唤他名字，他应诺；曹山却说好酒\n三盏喝了，还说未沾唇。", "meaning": "人常说自己贫乏，却不知已经拥有最根本的东西。禅师要他看见“应诺”\n的当下。", "score": 3}, {"id": "wumenguan-11", "collection": "无门关", "collectionId": "wumenguan", "number": 11, "title": "州勘庵主", "source": "《无门关》第11则。", "story": "赵州到两个庵主处，同样问“有么有么”。两个庵主都竖起拳头，赵州却\n对一个说水浅不能泊船，对另一个作礼赞许。", "meaning": "同一个动作，在不同人、不同语境中意义不同。禅不是标准答案，而\n是当机判断。", "score": 3}, {"id": "wumenguan-12", "collection": "无门关", "collectionId": "wumenguan", "number": 12, "title": "岩唤主人", "source": "《无门关》第12则。", "story": "瑞岩每天自唤“主人公”，又自己答“喏”。随后提醒自己：“惺惺著，他\n时异日，莫受人瞒。”", "meaning": "修行最朴素的开始，是每天把自己叫醒：不要被情绪、习惯、外境牵\n着走。", "score": 5}, {"id": "wumenguan-13", "collection": "无门关", "collectionId": "wumenguan", "number": 13, "title": "德山托钵", "source": "《无门关》第13则。", "story": "德山未到钟鼓时便托钵下堂。雪峰问：钟未鸣、鼓未响，你托钵去哪\n里？德山便回方丈。岩头后来评说，德山还未会“末后句”。", "meaning": "习惯动作被一句问话打断。禅师不是纠正流程，而是要人看见自己为\n什么如此行动。", "score": 4}, {"id": "wumenguan-14", "collection": "无门关", "collectionId": "wumenguan", "number": 14, "title": "南泉斩猫", "source": "《无门关》第14则；亦见《从容录》第9则。", "story": "东西两堂僧人为一只猫争执。南泉提起猫说：你们说得出一句就救\n猫，说不出就斩。众人无对，南泉斩猫。赵州回来后，把草鞋戴在头上走出，南\n泉说若赵州在就救得猫。", "meaning": "这则极具冲击力。它不是鼓励伤害生命，而是警醒：人在争执、所有\n权和对错中，往往最先遗忘生命本身。", "score": 5}, {"id": "wumenguan-15", "collection": "无门关", "collectionId": "wumenguan", "number": 15, "title": "洞山三顿", "source": "《无门关》第15则。", "story": "洞山参云门，答问后云门说“放汝三顿棒”。次日洞山追问自己过在哪\n里，云门骂他“饭袋子”，洞山当下大悟。", "meaning": "棒喝不是惩罚，而是逼人从自以为懂的状态里醒来。", "score": 4}, {"id": "wumenguan-16", "collection": "无门关", "collectionId": "wumenguan", "number": 16, "title": "钟声七条", "source": "《无门关》第16则。", "story": "云门问：世界这样广阔，为什么向钟声里披七条袈裟？一句话把“听钟\n声”“披袈裟”“入法会”的日常动作变成公案。", "meaning": "人在声色中行动，却常不知道自己为何行动。公案让人从日常仪式中\n醒来。", "score": 2}, {"id": "wumenguan-17", "collection": "无门关", "collectionId": "wumenguan", "number": 17, "title": "国师三唤", "source": "《无门关》第17则。", "story": "国师三次唤侍者，侍者三次应诺。国师却说：我原以为是我辜负你，\n原来是你辜负我。", "meaning": "听见声音不等于真正相应。表面答应了，心未必真的醒着。", "score": 3}, {"id": "wumenguan-18", "collection": "无门关", "collectionId": "wumenguan", "number": 18, "title": "洞山三斤", "source": "《无门关》第18则；《碧岩录》第12则。", "story": "僧问洞山：“如何是佛？”洞山回答：“麻三斤。”高远的佛被放进一件具\n体、平常、甚至带重量的事物里。", "meaning": "佛不在抽象概念中，也不离眼前一物。关键不是解释“麻三斤”，而是被\n它打断思路。", "score": 5}, {"id": "wumenguan-19", "collection": "无门关", "collectionId": "wumenguan", "number": 19, "title": "平常是道", "source": "《无门关》第19则。", "story": "赵州问南泉如何是道。南泉答：“平常心是道。”赵州又问能否朝它努\n力，南泉说：“拟向即乖。”", "meaning": "越刻意追逐“道”，越远离道。真正的道在不造作、不分别的平常心里。", "score": 5}, {"id": "wumenguan-20", "collection": "无门关", "collectionId": "wumenguan", "number": 20, "title": "大力量人", "source": "《无门关》第20则。", "story": "松源问：大力量人为什么抬脚不起？又说开口不在舌头上。", "meaning": "真正的力量不是外在用力，而是身心语言都不被习惯支配。", "score": 3}, {"id": "wumenguan-21", "collection": "无门关", "collectionId": "wumenguan", "number": 21, "title": "云门屎橛", "source": "《无门关》第21则。", "story": "僧问云门：“如何是佛？”云门答：“干屎橛。”这句粗粝刺耳，直接击碎\n学人对佛的庄严想象。", "meaning": "若把佛只放在高贵、清净、神圣的概念里，就又造了一个偶像。", "score": 5}, {"id": "wumenguan-22", "collection": "无门关", "collectionId": "wumenguan", "number": 22, "title": "迦叶刹竿", "source": "《无门关》第22则。", "story": "阿难问迦叶，世尊传金襕袈裟之外还传了什么。迦叶唤阿难，阿难应\n诺。迦叶说：“倒却门前刹竿著。”", "meaning": "传法不在物件，也不在秘密答案，而在一呼一应的当下。\n禅宗公案大全：无门关卷（48则完整版）\n6", "score": 3}, {"id": "wumenguan-23", "collection": "无门关", "collectionId": "wumenguan", "number": 23, "title": "不思善恶", "source": "《无门关》第23则；《六祖坛经》系统。", "story": "惠明追六祖求法。六祖说：“不思善，不思恶，正与么时，哪个是明上\n座本来面目？”惠明当下大悟。", "meaning": "当善恶、得失、身份标签暂时放下时，人得以回看未被遮蔽的自己。", "score": 5}, {"id": "wumenguan-24", "collection": "无门关", "collectionId": "wumenguan", "number": 24, "title": "离却语言", "source": "《无门关》第24则。", "story": "僧问风穴：说话和沉默都可能落入过失，如何才不犯？风穴答：“长忆\n江南三月里，鹧鸪啼处百花香。”", "meaning": "有些回答不是解释，而是打开一个境界。诗意有时比逻辑更接近禅。", "score": 4}, {"id": "wumenguan-25", "collection": "无门关", "collectionId": "wumenguan", "number": 25, "title": "三座说法", "source": "《无门关》第25则。", "story": "仰山梦见自己到弥勒处坐第三座，被请说法。他只说：“摩诃衍法离四\n句绝百非，谛听谛听。”", "meaning": "真正说法不是堆语言，而是让人离开固定判断。", "score": 3}, {"id": "wumenguan-26", "collection": "无门关", "collectionId": "wumenguan", "number": 26, "title": "二僧卷帘", "source": "《无门关》第26则。", "story": "法眼用手指帘，两个僧人同时去卷帘。法眼却说：“一得一失。”", "meaning": "外在动作相同，内在用心可能完全不同。禅不只看行为表面。", "score": 4}, {"id": "wumenguan-27", "collection": "无门关", "collectionId": "wumenguan", "number": 27, "title": "不是心佛", "source": "《无门关》第27则。", "story": "僧问南泉是否有不与人说的法。南泉说有。僧追问是什么，南泉答：\n“不是心，不是佛，不是物。”", "meaning": "只要还能把它抓成一个对象，就还不是那个不可说之法。", "score": 3}, {"id": "wumenguan-28", "collection": "无门关", "collectionId": "wumenguan", "number": 28, "title": "久响龙潭", "source": "《无门关》第28则。", "story": "德山夜参龙潭。出门见外面黑，龙潭点烛给他。德山正要接，龙潭吹\n灭烛火，德山忽然大悟。", "meaning": "外面的灯被吹灭时，人才可能发现真正的明处不在外面。", "score": 5}, {"id": "wumenguan-29", "collection": "无门关", "collectionId": "wumenguan", "number": 29, "title": "非风非幡", "source": "《无门关》第29则；《六祖坛经》系统。", "story": "两位僧人争论是风动还是幡动。六祖说：不是风动，不是幡动，是仁\n者心动。", "meaning": "外境变化只是缘，真正起分别和波动的是自己的心。", "score": 5}, {"id": "wumenguan-30", "collection": "无门关", "collectionId": "wumenguan", "number": 30, "title": "即心即佛", "source": "《无门关》第30则；马祖语录系统。", "story": "大梅问马祖：“如何是佛？”马祖答：“即心是佛。”后来又有“非心非佛”\n来破除执著。", "meaning": "佛不在心外，但“即心是佛”也不能变成一句死口号。", "score": 4}, {"id": "wumenguan-31", "collection": "无门关", "collectionId": "wumenguan", "number": 31, "title": "赵州勘婆", "source": "《无门关》第31则；亦与《从容录》第10则系统相关。", "story": "僧问婆子台山路，婆子说“蓦直去”，等僧走几步又评点。赵州亲自去\n问，回来对众说已勘破婆子。", "meaning": "路不只在地图上，也在脚下和心里。会不会走，要经得起勘验。\n禅宗公案大全：无门关卷（48则完整版）\n8", "score": 4}, {"id": "wumenguan-32", "collection": "无门关", "collectionId": "wumenguan", "number": 32, "title": "外道问佛", "source": "《无门关》第32则。", "story": "外道对佛说：不问有言，不问无言。世尊只是据座不语。外道却赞叹\n佛大慈大悲，使他得入。", "meaning": "沉默不是没有回答。有时不落语言和沉默，才是真正的回答。", "score": 4}, {"id": "wumenguan-33", "collection": "无门关", "collectionId": "wumenguan", "number": 33, "title": "非心非佛", "source": "《无门关》第33则；马祖语录系统。", "story": "僧问马祖如何是佛，马祖答：“非心非佛。”这与“即心是佛”看似相反，\n实则都是应病与药。", "meaning": "禅师的话不能当固定理论。执著“即心是佛”时，就要用“非心非佛”来\n破。", "score": 4}, {"id": "wumenguan-34", "collection": "无门关", "collectionId": "wumenguan", "number": 34, "title": "智不是道", "source": "《无门关》第34则。", "story": "南泉说：“心不是佛，智不是道。”他把学人容易依赖的“心”和“智慧”都\n推开。", "meaning": "聪明理解不等于道。知识越多，也可能越会绕路。", "score": 3}, {"id": "wumenguan-35", "collection": "无门关", "collectionId": "wumenguan", "number": 35, "title": "倩女离魂", "source": "《无门关》第35则。", "story": "五祖借“倩女离魂”的故事发问：身体和魂魄分开时，哪个才是真的倩\n女？", "meaning": "身份、自我、身体、心识，看似确定，细究起来却并不简单。", "score": 4}, {"id": "wumenguan-36", "collection": "无门关", "collectionId": "wumenguan", "number": 36, "title": "路逢达道", "source": "《无门关》第36则。", "story": "五祖说：路上遇到真正达道的人，不能用语言回答，也不能用沉默回\n答，那该用什么回答？", "meaning": "在语言和沉默之外，还有更直接的相见。", "score": 3}, {"id": "wumenguan-37", "collection": "无门关", "collectionId": "wumenguan", "number": 37, "title": "庭前柏树", "source": "《无门关》第37则；亦见《从容录》第47则。", "story": "僧问赵州：“如何是祖师西来意？”赵州答：“庭前柏树子。”一个宏大的\n宗教问题，被拉回庭前一棵树。", "meaning": "人总想去远处找意义，禅师却指向眼前真实。", "score": 5}, {"id": "wumenguan-38", "collection": "无门关", "collectionId": "wumenguan", "number": 38, "title": "牛过窗棂", "source": "《无门关》第38则。", "story": "五祖说：水牯牛过窗棂，头、角、四蹄都过去了，为什么尾巴过不\n得？", "meaning": "最粗重的执著可能已经放下，最后一点细微尾巴却最难过关。", "score": 5}, {"id": "wumenguan-39", "collection": "无门关", "collectionId": "wumenguan", "number": 39, "title": "云门话堕", "source": "《无门关》第39则。", "story": "僧引用“光明寂照遍河沙”，话未说完，云门指出这是张拙秀才语，并说\n“话堕也”。", "meaning": "引用漂亮语言不等于见地。借来的好话，也可能让人堕入话语。", "score": 3}, {"id": "wumenguan-40", "collection": "无门关", "collectionId": "wumenguan", "number": 40, "title": "趯倒净瓶", "source": "《无门关》第40则。", "story": "百丈置净瓶问众：不得叫作净瓶，叫作什么？首座用语言回答，沩山\n却直接踢倒净瓶而去。", "meaning": "有些语言陷阱，最好的回答不是再命名，而是把问题本身踢翻。", "score": 4}, {"id": "wumenguan-41", "collection": "无门关", "collectionId": "wumenguan", "number": 41, "title": "达磨安心", "source": "《无门关》第41则；达磨传灯系统。", "story": "慧可求达磨安心。达磨说：把心拿来，我替你安。慧可找了很久，说\n觅心了不可得。达磨说：我已经替你安心了。", "meaning": "烦恼之心若被认真寻找，就会发现它没有固定实体。", "score": 5}, {"id": "wumenguan-42", "collection": "无门关", "collectionId": "wumenguan", "number": 42, "title": "女子出定", "source": "《无门关》第42则。", "story": "文殊见一女子近佛入定，自己却不能令其出定。佛说下方罔明菩萨能\n做到，罔明一弹指，女子便出定。", "meaning": "智慧、位次、作用不能用表面高低判断。真正有效的方便，可能出乎\n意料。", "score": 3}, {"id": "wumenguan-43", "collection": "无门关", "collectionId": "wumenguan", "number": 43, "title": "首山竹篦", "source": "《无门关》第43则。", "story": "首山拈起竹篦问众人：叫作竹篦就触犯，不叫竹篦就背离，那到底叫\n作什么？", "meaning": "语言命名本身就是两难。禅师要人看见自己如何被名称困住。", "score": 4}, {"id": "wumenguan-44", "collection": "无门关", "collectionId": "wumenguan", "number": 44, "title": "芭蕉拄杖", "source": "《无门关》第44则。", "story": "芭蕉说：你有拄杖，我给你拄杖；你没有拄杖，我夺你拄杖。", "meaning": "有也被夺，无也被夺。禅师要人离开“我有 / 我无”的依赖感。\n禅宗公案大全：无门关卷（48则完整版）\n11", "score": 4}, {"id": "wumenguan-45", "collection": "无门关", "collectionId": "wumenguan", "number": 45, "title": "他是阿谁", "source": "《无门关》第45则。", "story": "东山演说：释迦、弥勒尚且是他的奴仆，那“他”是谁？", "meaning": "这是逼人追问诸佛之前的那个根本主体。", "score": 3}, {"id": "wumenguan-46", "collection": "无门关", "collectionId": "wumenguan", "number": 46, "title": "竿头进步", "source": "《无门关》第46则。", "story": "古德问：百尺竿头的人，如何更进一步？已经站在极高处，按理不能\n再进，却仍被要求进步。", "meaning": "到达高处后，若执著“我在高处”，仍未自由。真正进步是连高处也放\n下。", "score": 5}, {"id": "wumenguan-47", "collection": "无门关", "collectionId": "wumenguan", "number": 47, "title": "兜率三关", "source": "《无门关》第47则。", "story": "兜率悦设三关：拨草参玄只为见性，性在何处？眼光落时如何脱生\n死？脱得生死后向何处去？", "meaning": "这是见性、生死、归宿三大问题的连续追问。", "score": 3}, {"id": "wumenguan-48", "collection": "无门关", "collectionId": "wumenguan", "number": 48, "title": "干峰一路", "source": "《无门关》第48则。", "story": "僧问十方诸佛一路涅槃门，路头在哪里。干峰拈起拄杖划一划，说在\n这里。云门后来又以扇子作别样回应。", "meaning": "路头不在远方，也不在解释中，而在当下一机一境。", "score": 3}, {"id": "biyanlu-1", "collection": "碧岩录", "collectionId": "biyanlu", "number": 1, "title": "达磨廓然", "source": "《碧岩录》第1则；亦见《从容录》第2则。", "story": "梁武帝自认广修寺院、度僧无数，便问达磨“如何是圣谛第一义”。达磨\n答“廓然无圣”。梁武帝再问“对朕者谁”，达磨答“不识”，随后渡江北去，面壁少\n林。", "meaning": "破除功德相、圣凡相、帝王自我中心；真正佛法不是功德账本。", "score": 5}, {"id": "biyanlu-2", "collection": "碧岩录", "collectionId": "biyanlu", "number": 2, "title": "赵州至道无难", "source": "《碧岩录》第2则。", "story": "赵州举“三祖信心铭”语：“至道无难，唯嫌拣择。”僧人追问“不在明白里\n还护惜什么”，赵州用“不知”等语继续逼问。\n禅宗公案大全：碧岩录卷（100则完整版）\n1", "meaning": "道不难，难在人心不断选择、比较、贴标签。", "score": 4}, {"id": "biyanlu-3", "collection": "碧岩录", "collectionId": "biyanlu", "number": 3, "title": "马祖日面佛月面佛", "source": "《碧岩录》第3则；亦见《从容录》第36则。", "story": "马祖病中，院主问他身体如何。马祖不说好坏，只答“日面佛，月面\n佛”。他把病况从生死忧惧中翻转成佛名。", "meaning": "病中仍不被病定义，生死中仍可见自在。", "score": 4}, {"id": "biyanlu-4", "collection": "碧岩录", "collectionId": "biyanlu", "number": 4, "title": "德山到沩山", "source": "《碧岩录》第4则。", "story": "德山到沩山，挟包上法堂，从东走到西、从西走到东，只说“无无”，随\n后便出。后来又具威仪入见，喝而出。", "meaning": "禅门相见不在礼节外观，而在主宾机锋是否真正相触。", "score": 3}, {"id": "biyanlu-5", "collection": "碧岩录", "collectionId": "biyanlu", "number": 5, "title": "雪峰粟米粒", "source": "《碧岩录》第5则。", "story": "雪峰说“尽大地撮来如粟米粒大，抛向面前”，若还不会，就打鼓普请大\n家来看。", "meaning": "宏大世界可被一念收摄；但若只在语句上理解，仍是隔靴搔痒。", "score": 4}, {"id": "biyanlu-6", "collection": "碧岩录", "collectionId": "biyanlu", "number": 6, "title": "云门日日是好日", "source": "《碧岩录》第6则。", "story": "云门说：“十五日以前不问你，十五日以后道一句来。”随即自代曰：“日\n日是好日。”", "meaning": "不是每天都顺利才叫好日，而是不再被顺逆牵着走。", "score": 5}, {"id": "biyanlu-7", "collection": "碧岩录", "collectionId": "biyanlu", "number": 7, "title": "法眼慧超", "source": "《碧岩录》第7则。", "story": "慧超问法眼：“如何是佛？”法眼不解释佛理，只回答：“汝是慧超。”", "meaning": "从向外寻找佛，回到此时此地的提问者自身。", "score": 4}, {"id": "biyanlu-8", "collection": "碧岩录", "collectionId": "biyanlu", "number": 8, "title": "翠岩眉毛", "source": "《碧岩录》第8则。", "story": "夏末，翠岩问众人：“一夏以来，为兄弟说话，看翠岩眉毛在么？”保\n福、长庆、云门各自作答。", "meaning": "说法者也要自检；若落虚妄，所谓“眉毛脱落”。", "score": 3}, {"id": "biyanlu-9", "collection": "碧岩录", "collectionId": "biyanlu", "number": 9, "title": "赵州四门", "source": "《碧岩录》第9则。", "story": "僧问“如何是赵州？”赵州答：“东门、西门、南门、北门。”他不用人格\n标签回答，而以一座城的四通八达回应。", "meaning": "真正的赵州不是概念，而是活泼通达的作用。", "score": 3}, {"id": "biyanlu-10", "collection": "碧岩录", "collectionId": "biyanlu", "number": 10, "title": "睦州勘喝", "source": "《碧岩录》第10则。", "story": "僧来便喝，睦州说自己被他一喝。僧再喝，睦州追问“三喝四喝后作么\n生”，僧无语，被睦州打。", "meaning": "模仿“喝”很容易，真有转身处很难。", "score": 3}, {"id": "biyanlu-11", "collection": "碧岩录", "collectionId": "biyanlu", "number": 11, "title": "黄檗无禅师", "source": "《碧岩录》第11则；亦见《从容录》第53则。", "story": "黄檗呵众人“尽是噇酒糟汉”，又说“大唐国里无禅师”。僧问诸方领众者\n如何，黄檗说不是无禅，只是无师。", "meaning": "热闹道场不等于有真实眼目；跟随人群不等于参禅。\n禅宗公案大全：碧岩录卷（100则完整版）\n3", "score": 4}, {"id": "biyanlu-12", "collection": "碧岩录", "collectionId": "biyanlu", "number": 12, "title": "洞山麻三斤", "source": "《碧岩录》第12则；亦见《无门关》第18则。", "story": "僧问“如何是佛？”洞山答“麻三斤”。高远问题被放回眼前具体物。", "meaning": "佛不离日常，但也不能把“麻三斤”解释成新概念。", "score": 5}, {"id": "biyanlu-13", "collection": "碧岩录", "collectionId": "biyanlu", "number": 13, "title": "巴陵银碗盛雪", "source": "《碧岩录》第13则。", "story": "僧问“如何是提婆宗？”巴陵答“银碗里盛雪”。银与雪同白，清冷相映。", "meaning": "宗旨清明难辨，不可粗心从字面求。", "score": 3}, {"id": "biyanlu-14", "collection": "碧岩录", "collectionId": "biyanlu", "number": 14, "title": "云门对一说", "source": "《碧岩录》第14则。", "story": "僧问“如何是一代时教？”云门只答：“对一说。”", "meaning": "三藏十二部归于当下一句；但若执著“一”，又错。", "score": 3}, {"id": "biyanlu-15", "collection": "碧岩录", "collectionId": "biyanlu", "number": 15, "title": "云门倒一说", "source": "《碧岩录》第15则。", "story": "僧问“不是目前机，亦非目前事时如何？”云门答“倒一说”。", "meaning": "把思路翻转过来，逼人离开正反两边。", "score": 3}, {"id": "biyanlu-16", "collection": "碧岩录", "collectionId": "biyanlu", "number": 16, "title": "镜清啐啄", "source": "《碧岩录》第16则。", "story": "僧说“学人啐，请师啄”。镜清问“还得活也无？”师生如雏鸟破壳，内外\n时机必须同时成熟。", "meaning": "真正教学是内在成熟与外在点拨相应。\n禅宗公案大全：碧岩录卷（100则完整版）\n4", "score": 4}, {"id": "biyanlu-17", "collection": "碧岩录", "collectionId": "biyanlu", "number": 17, "title": "香林坐久成劳", "source": "《碧岩录》第17则。", "story": "僧问“如何是祖师西来意？”香林答“坐久成劳”。一句话把玄妙追问拉回\n身体疲劳。", "meaning": "禅不离身体真实经验；久坐也不是道本身。", "score": 3}, {"id": "biyanlu-18", "collection": "碧岩录", "collectionId": "biyanlu", "number": 18, "title": "国师无缝塔", "source": "《碧岩录》第18则；亦见《从容录》第85则。", "story": "皇帝问国师身后需要什么，国师说“作个无缝塔”。皇帝请问塔样，国师\n沉默良久。", "meaning": "真正归处无形无缝，无法用图样表达。", "score": 3}, {"id": "biyanlu-19", "collection": "碧岩录", "collectionId": "biyanlu", "number": 19, "title": "俱胝一指", "source": "《碧岩录》第19则；亦见《无门关》第3则。", "story": "俱胝凡问只竖一指，童子模仿被截指，回头再见一指而悟。", "meaning": "形式不是法；断除对形式的执著，才有入处。", "score": 4}, {"id": "biyanlu-20", "collection": "碧岩录", "collectionId": "biyanlu", "number": 20, "title": "龙牙西来意", "source": "《碧岩录》第20则。", "story": "僧问龙牙祖师西来意，龙牙以机锋回转，不给概念答案。", "meaning": "祖师意不是一句解释，而是当场呈现的手眼。", "score": 3}, {"id": "biyanlu-21", "collection": "碧岩录", "collectionId": "biyanlu", "number": 21, "title": "智门莲花荷叶", "source": "《碧岩录》第21则。", "story": "智门借莲花、荷叶等意象回应学人，清净物象中藏着机锋。", "meaning": "自然物象能承载禅意，但不能被当成诗意装饰。\n禅宗公案大全：碧岩录卷（100则完整版）\n5", "score": 3}, {"id": "biyanlu-22", "collection": "碧岩录", "collectionId": "biyanlu", "number": 22, "title": "雪峰鳖鼻蛇", "source": "《碧岩录》第22则；亦见《从容录》第24则。", "story": "雪峰示众说南山有一条鳖鼻蛇，众人要好好看取。看似提醒危险，实\n则把危险放在修行当下。", "meaning": "法机与险处常在一起，不可粗心。", "score": 3}, {"id": "biyanlu-23", "collection": "碧岩录", "collectionId": "biyanlu", "number": 23, "title": "保福妙峰顶", "source": "《碧岩录》第23则。", "story": "围绕“妙峰顶”展开问答，诸师借最高峰检验学人是否停在境界中。", "meaning": "即使到达高峰，若执著高峰仍是障碍。", "score": 3}, {"id": "biyanlu-24", "collection": "碧岩录", "collectionId": "biyanlu", "number": 24, "title": "刘铁磨台山", "source": "《碧岩录》第24则。", "story": "刘铁磨机锋峻烈，与禅师往来问答互不相让，女禅者风骨鲜明。", "meaning": "禅门不以性别身份论高下，只看见地与机锋。", "score": 4}, {"id": "biyanlu-25", "collection": "碧岩录", "collectionId": "biyanlu", "number": 25, "title": "莲花峰拄杖", "source": "《碧岩录》第25则。", "story": "莲花峰和尚拈拄杖示众，借行脚工具追问归家路。", "meaning": "拄杖既是依靠，也可能成为执著。", "score": 3}, {"id": "biyanlu-26", "collection": "碧岩录", "collectionId": "biyanlu", "number": 26, "title": "百丈独坐大雄峰", "source": "《碧岩录》第26则。", "story": "僧问百丈有何奇特事，百丈答“独坐大雄峰”。", "meaning": "真正奇特不在神异，而在安住本位。\n禅宗公案大全：碧岩录卷（100则完整版）\n6", "score": 4}, {"id": "biyanlu-27", "collection": "碧岩录", "collectionId": "biyanlu", "number": 27, "title": "云门体露金风", "source": "《碧岩录》第27则。", "story": "僧问树凋叶落时如何，云门答“体露金风”。", "meaning": "凋零不是衰败，也可能是真体显露。", "score": 4}, {"id": "biyanlu-28", "collection": "碧岩录", "collectionId": "biyanlu", "number": 28, "title": "南泉不说法", "source": "《碧岩录》第28则。", "story": "围绕南泉是否说法，禅师让学人看到：说与不说都可能是法。", "meaning": "佛法不只在讲解中，也在沉默、行动和时机中。", "score": 3}, {"id": "biyanlu-29", "collection": "碧岩录", "collectionId": "biyanlu", "number": 29, "title": "大随劫火", "source": "《碧岩录》第29则；亦见《从容录》第30则。", "story": "僧问劫火洞然、大千俱坏时“这个”坏不坏，大随答“坏”。", "meaning": "连最想抓住的“这个”也不可执为永恒。", "score": 3}, {"id": "biyanlu-30", "collection": "碧岩录", "collectionId": "biyanlu", "number": 30, "title": "赵州大萝卜头", "source": "《碧岩录》第30则。", "story": "赵州以“大萝卜头”等俗物回应问法，打破对玄妙答案的期待。", "meaning": "日常粗俗物也能成为禅机。", "score": 4}, {"id": "biyanlu-31", "collection": "碧岩录", "collectionId": "biyanlu", "number": 31, "title": "麻谷振锡", "source": "《碧岩录》第31则；亦见《从容录》第16则。", "story": "麻谷持锡绕禅床三匝，振锡而立。章敬说是，南泉说不是。", "meaning": "同一动作不等于同一见地，判断要看当机。", "score": 3}, {"id": "biyanlu-32", "collection": "碧岩录", "collectionId": "biyanlu", "number": 32, "title": "临济佛法大意", "source": "《碧岩录》第32则。", "story": "定上座问佛法大意，临济下禅床擒住，打一掌又托开。定上座礼拜后\n大悟。", "meaning": "佛法大意不是解释，而是当头承当。", "score": 4}, {"id": "biyanlu-33", "collection": "碧岩录", "collectionId": "biyanlu", "number": 33, "title": "陈操看资福", "source": "《碧岩录》第33则。", "story": "资福见陈操来，画一圆相。陈操说自己这样来已不合适，何况又画圆\n相。资福便掩门。", "meaning": "士大夫参禅，也必须过真实机锋。", "score": 3}, {"id": "biyanlu-34", "collection": "碧岩录", "collectionId": "biyanlu", "number": 34, "title": "仰山不曾游山", "source": "《碧岩录》第34则。", "story": "僧说从庐山来，仰山问是否到过五老峰。僧说不曾，仰山说他不曾游\n山。", "meaning": "去过不等于见过；经历不等于领会。", "score": 3}, {"id": "biyanlu-35", "collection": "碧岩录", "collectionId": "biyanlu", "number": 35, "title": "文殊前三三后三三", "source": "《碧岩录》第35则。", "story": "无著遇文殊，问清凉山众数，文殊答“前三三，后三三”。", "meaning": "数字不是算术题，而是截断计算心。", "score": 3}, {"id": "biyanlu-36", "collection": "碧岩录", "collectionId": "biyanlu", "number": 36, "title": "长沙游山", "source": "《碧岩录》第36则。", "story": "长沙游山回来，说“始随芳草去，又逐落花回”。首座赞似春意，长沙又\n回一句更胜秋露。\n禅宗公案大全：碧岩录卷（100则完整版）\n8", "meaning": "随芳草去、逐落花回，是随缘自在的行履。", "score": 4}, {"id": "biyanlu-37", "collection": "碧岩录", "collectionId": "biyanlu", "number": 37, "title": "盘山三界无法", "source": "《碧岩录》第37则。", "story": "盘山垂语：“三界无法，何处求心？”把向外求心的路径当场截断。", "meaning": "心不可在对象世界中寻找。", "score": 3}, {"id": "biyanlu-38", "collection": "碧岩录", "collectionId": "biyanlu", "number": 38, "title": "风穴铁牛之机", "source": "《碧岩录》第38则；亦见《从容录》第29则。", "story": "风穴说祖师心印如铁牛之机，去即印住，住即印破。", "meaning": "动静去住都不可执，机用贵在活。", "score": 3}, {"id": "biyanlu-39", "collection": "碧岩录", "collectionId": "biyanlu", "number": 39, "title": "云门花药栏", "source": "《碧岩录》第39则。", "story": "僧问清净法身，云门答“花药栏”；再问便恁么去如何，云门答“金毛狮\n子”。", "meaning": "清净法身不离眼前花栏，也不落花栏。", "score": 3}, {"id": "biyanlu-40", "collection": "碧岩录", "collectionId": "biyanlu", "number": 40, "title": "南泉庭前花如梦", "source": "《碧岩录》第40则。", "story": "陆亘引用“天地与我同根，万物与我一体”，南泉指庭前花说时人见此花\n如梦。", "meaning": "高妙理论若不落真实见地，仍只是梦中看花。", "score": 4}, {"id": "biyanlu-41", "collection": "碧岩录", "collectionId": "biyanlu", "number": 41, "title": "赵州大死底人", "source": "《碧岩录》第41则。", "story": "围绕“大死底人却活时如何”发问，赵州把死活问题转成修行关口。\n禅宗公案大全：碧岩录卷（100则完整版）\n9", "meaning": "大死大活，是旧我彻底放下后的真实转身。", "score": 4}, {"id": "biyanlu-42", "collection": "碧岩录", "collectionId": "biyanlu", "number": 42, "title": "庞居士好雪片片", "source": "《碧岩录》第42则。", "story": "庞居士见雪，说“好雪片片，不落别处”。每片雪都落在它该落的地方。", "meaning": "万物各安其位，当下无一物错落。", "score": 5}, {"id": "biyanlu-43", "collection": "碧岩录", "collectionId": "biyanlu", "number": 43, "title": "洞山无寒暑", "source": "《碧岩录》第43则。", "story": "僧问寒暑来时如何回避。洞山说何不到无寒暑处；又说寒时寒杀阇\n黎，热时热杀阇黎。", "meaning": "不是逃离寒暑，而是在寒暑中全然承当。", "score": 5}, {"id": "biyanlu-44", "collection": "碧岩录", "collectionId": "biyanlu", "number": 44, "title": "禾山解打鼓", "source": "《碧岩录》第44则。", "story": "禾山多次以“解打鼓”回应问法。问者求玄妙，他只指向“会不会打鼓”的\n作用。", "meaning": "懂佛法要看真实作用，不是看解释漂亮。", "score": 3}, {"id": "biyanlu-45", "collection": "碧岩录", "collectionId": "biyanlu", "number": 45, "title": "赵州衫重七斤", "source": "《碧岩录》第45则。", "story": "僧问“万法归一，一归何处？”赵州答：“我在青州作一领布衫，重七\n斤。”", "meaning": "最抽象的问题，被落回一件衣服的重量。", "score": 5}, {"id": "biyanlu-46", "collection": "碧岩录", "collectionId": "biyanlu", "number": 46, "title": "镜清雨滴声", "source": "《碧岩录》第46则。", "story": "镜清问门外是什么声，僧答雨滴声。镜清借此追问听声者是否真明\n白。", "meaning": "听见声音容易，识得听者难。", "score": 4}, {"id": "biyanlu-47", "collection": "碧岩录", "collectionId": "biyanlu", "number": 47, "title": "云门六不收", "source": "《碧岩录》第47则。", "story": "云门以“六不收”等语，破除学人对凡圣、内外、取舍的依附。", "meaning": "真正自由处，不被任何分类收摄。", "score": 3}, {"id": "biyanlu-48", "collection": "碧岩录", "collectionId": "biyanlu", "number": 48, "title": "王太傅煎茶", "source": "《碧岩录》第48则。", "story": "王太傅与禅师在煎茶、饮茶等雅事中展开问答，士大夫生活变成禅机\n现场。", "meaning": "日常雅事若能照心，也可成为修行。", "score": 4}, {"id": "biyanlu-49", "collection": "碧岩录", "collectionId": "biyanlu", "number": 49, "title": "三圣金鳞", "source": "《碧岩录》第49则；亦见《从容录》第33则相关。", "story": "三圣借“金鳞不是池中物”等意象呈机，围绕出格、化龙、脱网展开。", "meaning": "真正修行者不困在旧池塘。", "score": 3}, {"id": "biyanlu-50", "collection": "碧岩录", "collectionId": "biyanlu", "number": 50, "title": "云门尘尘三昧", "source": "《碧岩录》第50则。", "story": "云门围绕一尘一法开示，每一微尘都可显出三昧。", "meaning": "不必离万物求禅，尘尘处处皆可入道。", "score": 3}, {"id": "biyanlu-51", "collection": "碧岩录", "collectionId": "biyanlu", "number": 51, "title": "雪峰是什么", "source": "《碧岩录》第51则；亦见《从容录》第50则相关。", "story": "雪峰住庵时见僧来，托庵门问“是什么”，僧也回问“是什么”。", "meaning": "“是什么”不是定义题，而是当场验人。", "score": 3}, {"id": "biyanlu-52", "collection": "碧岩录", "collectionId": "biyanlu", "number": 52, "title": "赵州石桥", "source": "《碧岩录》第52则。", "story": "僧说久闻赵州石桥，来后只见小桥。赵州借桥能否过人回应。", "meaning": "名声大小不重要，能不能渡人最重要。", "score": 4}, {"id": "biyanlu-53", "collection": "碧岩录", "collectionId": "biyanlu", "number": 53, "title": "百丈野鸭子", "source": "《碧岩录》第53则。", "story": "马祖与百丈见野鸭飞过。马祖问是什么，百丈答野鸭子。马祖扭其鼻\n问“飞到哪里去了”，百丈痛叫而悟。", "meaning": "以为境界飞走了，其实痛切当下从未离开。", "score": 5}, {"id": "biyanlu-54", "collection": "碧岩录", "collectionId": "biyanlu", "number": 54, "title": "云门展两手", "source": "《碧岩录》第54则。", "story": "云门以展手等动作回应问法，直接把机用呈现给学人。", "meaning": "身体动作有时比解释更接近答案。", "score": 3}, {"id": "biyanlu-55", "collection": "碧岩录", "collectionId": "biyanlu", "number": 55, "title": "道吾吊慰", "source": "《碧岩录》第55则。", "story": "道吾与渐源去吊丧，围绕棺木、生死、死活发问。", "meaning": "面对死亡，禅师不讲安慰话，而是直面生死。", "score": 4}, {"id": "biyanlu-56", "collection": "碧岩录", "collectionId": "biyanlu", "number": 56, "title": "钦山一镞破三关", "source": "《碧岩录》第56则。", "story": "钦山以一箭破三关为喻，显示一句机锋同时穿透多重执著。", "meaning": "真见地能一击穿透层层关卡。", "score": 3}, {"id": "biyanlu-57", "collection": "碧岩录", "collectionId": "biyanlu", "number": 57, "title": "赵州不知", "source": "《碧岩录》第57则。", "story": "赵州面对追问时以“不知”回应，不给学人抓住知识答案的机会。", "meaning": "禅门的不知，不是无知，而是不落知解。", "score": 3}, {"id": "biyanlu-58", "collection": "碧岩录", "collectionId": "biyanlu", "number": 58, "title": "赵州不会", "source": "《碧岩录》第58则。", "story": "赵州以“不会”等语接人，看似退让，实则截断对方追逐答案的路。", "meaning": "会与不会都可成为活句。", "score": 3}, {"id": "biyanlu-59", "collection": "碧岩录", "collectionId": "biyanlu", "number": 59, "title": "赵州唯嫌拣择", "source": "《碧岩录》第59则相关赵州系统。", "story": "赵州反复拈“至道无难，唯嫌拣择”，令学人看见分别心的惯性。", "meaning": "修行难，多由取舍分别生起。", "score": 4}, {"id": "biyanlu-60", "collection": "碧岩录", "collectionId": "biyanlu", "number": 60, "title": "云门拄杖化龙", "source": "《碧岩录》第60则。", "story": "云门说拄杖子化为龙，吞却乾坤，山河大地从何而来？", "meaning": "一根拄杖也可吞吐宇宙，显示禅宗语言张力。", "score": 4}, {"id": "biyanlu-61", "collection": "碧岩录", "collectionId": "biyanlu", "number": 61, "title": "风穴一尘", "source": "《碧岩录》第61则；亦见《从容录》第34则相关。", "story": "风穴以一尘举起、大地全收开示，微尘与世界互相映照。\n禅宗公案大全：碧岩录卷（100则完整版）\n13", "meaning": "一尘中可见大千世界。", "score": 3}, {"id": "biyanlu-62", "collection": "碧岩录", "collectionId": "biyanlu", "number": 62, "title": "云门一宝", "source": "《碧岩录》第62则；亦见《从容录》第92则相关。", "story": "云门说乾坤之内、宇宙之间中有一宝，秘在形山。", "meaning": "宝不在外求，就藏在此身此心。", "score": 4}, {"id": "biyanlu-63", "collection": "碧岩录", "collectionId": "biyanlu", "number": 63, "title": "南泉斩猫再拈", "source": "《碧岩录》第63则；南泉斩猫系统。", "story": "碧岩录重新拈出南泉斩猫，围绕道得、道不得、斩与不斩展开评唱。", "meaning": "经典公案可被不断重参，每次都能照见新的执著。", "score": 4}, {"id": "biyanlu-64", "collection": "碧岩录", "collectionId": "biyanlu", "number": 64, "title": "赵州戴草鞋", "source": "《碧岩录》第64则；南泉斩猫系统。", "story": "赵州听闻南泉斩猫，脱草鞋戴在头上而出。南泉说若赵州在便救得\n猫。", "meaning": "行动超出常理，正是跳出争执框架的回答。", "score": 5}, {"id": "biyanlu-65", "collection": "碧岩录", "collectionId": "biyanlu", "number": 65, "title": "外道问佛", "source": "《碧岩录》第65则；亦见《无门关》第32则。", "story": "外道问佛，不问有言，不问无言。世尊良久，外道赞叹得入。", "meaning": "真正回答不落语言，也不落沉默。", "score": 4}, {"id": "biyanlu-66", "collection": "碧岩录", "collectionId": "biyanlu", "number": 66, "title": "岩头末后句", "source": "《碧岩录》第66则相关岩头系统。", "story": "岩头以“末后句”点破同参未到处，让人知道语言尽处仍有一关。\n禅宗公案大全：碧岩录卷（100则完整版）\n14", "meaning": "最后一句不在句子里，而在生命转身处。", "score": 3}, {"id": "biyanlu-67", "collection": "碧岩录", "collectionId": "biyanlu", "number": 67, "title": "傅大士讲经", "source": "《碧岩录》第67则相关；灯录系统。", "story": "傅大士受请讲《金刚经》，登座拍案一下便下座。旁人说：大士已经讲\n完了。", "meaning": "真正讲经不必铺陈文字，一拍也能尽显。", "score": 5}, {"id": "biyanlu-68", "collection": "碧岩录", "collectionId": "biyanlu", "number": 68, "title": "仰山问性", "source": "《碧岩录》第68则相关沩仰系统。", "story": "仰山围绕佛性、自性设问，借境与动作呈现机锋。", "meaning": "性不是对象，要在当下作用处见。", "score": 3}, {"id": "biyanlu-69", "collection": "碧岩录", "collectionId": "biyanlu", "number": 69, "title": "南泉白牯牛", "source": "《碧岩录》第69则；亦见《从容录》第69则。", "story": "南泉说来生要作山下檀越家一头水牯牛，引发学人追问。", "meaning": "圣凡、人畜、还债与自在的边界被打破。", "score": 4}, {"id": "biyanlu-70", "collection": "碧岩录", "collectionId": "biyanlu", "number": 70, "title": "沩山业识", "source": "《碧岩录》第70则；亦见《从容录》第37则相关。", "story": "围绕“业识茫茫，无本可据”等语展开问答，直指生命流转惯性。", "meaning": "若不照见业识，人会被惯性牵引一生。", "score": 3}, {"id": "biyanlu-71", "collection": "碧岩录", "collectionId": "biyanlu", "number": 71, "title": "五峰并却咽喉", "source": "《碧岩录》第71则相关。", "story": "师家以“并却咽喉”等语逼问，让学人在不能开口处显露见地。\n禅宗公案大全：碧岩录卷（100则完整版）\n15", "meaning": "不能说时，才知道有没有真实出路。", "score": 3}, {"id": "biyanlu-72", "collection": "碧岩录", "collectionId": "biyanlu", "number": 72, "title": "百丈问五峰", "source": "《碧岩录》第72则相关。", "story": "百丈与五峰往返问答，围绕主宾、机用、承当展开勘验。", "meaning": "师徒相见不是知识问答，而是互相验眼。", "score": 3}, {"id": "biyanlu-73", "collection": "碧岩录", "collectionId": "biyanlu", "number": 73, "title": "马祖四句百非", "source": "《碧岩录》第73则；亦见《从容录》第6则系统。", "story": "僧请马祖离四句绝百非直指西来意，马祖令其转问智藏与百丈，三人\n各自出手眼。", "meaning": "越想绕开概念，越可能被概念缠住。", "score": 4}, {"id": "biyanlu-74", "collection": "碧岩录", "collectionId": "biyanlu", "number": 74, "title": "金牛饭桶", "source": "《碧岩录》第74则相关。", "story": "金牛和尚在斋饭日用中接人，围绕饭桶、吃饭显出禅机。", "meaning": "吃饭处就是修行处。", "score": 4}, {"id": "biyanlu-75", "collection": "碧岩录", "collectionId": "biyanlu", "number": 75, "title": "乌臼屈棒", "source": "《碧岩录》第75则相关。", "story": "乌臼以棒接人，来者在棒下显出承当或退缩。", "meaning": "棒不是暴力，而是截断迟疑。", "score": 3}, {"id": "biyanlu-76", "collection": "碧岩录", "collectionId": "biyanlu", "number": 76, "title": "丹霞问甚处来", "source": "《碧岩录》第76则相关丹霞系统。", "story": "丹霞以寻常问话接人，来者答处便露出见地深浅。\n禅宗公案大全：碧岩录卷（100则完整版）\n16", "meaning": "普通寒暄也可成为禅门关口。", "score": 3}, {"id": "biyanlu-77", "collection": "碧岩录", "collectionId": "biyanlu", "number": 77, "title": "云门饼", "source": "《碧岩录》第77则；云门语录系统。", "story": "云门以胡饼、糊饼等食物回应佛法问题，把玄妙问题落在可吃之物\n上。", "meaning": "饥来吃饭，日用即真。", "score": 5}, {"id": "biyanlu-78", "collection": "碧岩录", "collectionId": "biyanlu", "number": 78, "title": "十六开士入浴", "source": "《碧岩录》第78则。", "story": "十六开士入浴，因触水悟入。洗浴这种普通经验成了悟道因缘。", "meaning": "身体感受与日常行为也可成为法门。", "score": 4}, {"id": "biyanlu-79", "collection": "碧岩录", "collectionId": "biyanlu", "number": 79, "title": "投子一切声", "source": "《碧岩录》第79则相关投子系统。", "story": "投子围绕声、闻、法界展开问答，让学人从一切声音中返观。", "meaning": "声音不是障碍，随声逐色才是障碍。", "score": 3}, {"id": "biyanlu-80", "collection": "碧岩录", "collectionId": "biyanlu", "number": 80, "title": "赵州初生孩子", "source": "《碧岩录》第80则相关赵州系统。", "story": "赵州以初生孩子为喻，追问其是否具六识、是否还会分别。", "meaning": "纯真不是昏昧，无分别也不是无知。", "score": 4}, {"id": "biyanlu-81", "collection": "碧岩录", "collectionId": "biyanlu", "number": 81, "title": "药山麈中麈", "source": "《碧岩录》第81则相关药山系统。", "story": "药山借尘中尘、物中物等说法，点出极细微处仍有法机。\n禅宗公案大全：碧岩录卷（100则完整版）\n17", "meaning": "最细微处也可显全体。", "score": 2}, {"id": "biyanlu-82", "collection": "碧岩录", "collectionId": "biyanlu", "number": 82, "title": "大龙坚固法身", "source": "《碧岩录》第82则相关。", "story": "僧问坚固法身，大龙以山花、翠竹等境界回应。", "meaning": "法身不只是抽象坚固，也可由山花竹色显现。", "score": 3}, {"id": "biyanlu-83", "collection": "碧岩录", "collectionId": "biyanlu", "number": 83, "title": "云门古佛露柱", "source": "《碧岩录》第83则；亦见《从容录》第31则相关。", "story": "云门以露柱、古佛等物象答问，让寺院柱子也成为说法者。", "meaning": "无情物也能说法。", "score": 3}, {"id": "biyanlu-84", "collection": "碧岩录", "collectionId": "biyanlu", "number": 84, "title": "维摩不二", "source": "《碧岩录》第84则；《维摩诘经》不二法门。", "story": "诸菩萨各说不二法门，维摩居士默然无言，文殊赞叹这才是真入不\n二。", "meaning": "真正不二处，语言难以进入。", "score": 5}, {"id": "biyanlu-85", "collection": "碧岩录", "collectionId": "biyanlu", "number": 85, "title": "桐峰庵主虎声", "source": "《碧岩录》第85则相关。", "story": "山林庵主以虎声、山居气象接人，孤峻而难近。", "meaning": "山野孤庵也可成为大道场。", "score": 2}, {"id": "biyanlu-86", "collection": "碧岩录", "collectionId": "biyanlu", "number": 86, "title": "云门厨库三门", "source": "《碧岩录》第86则相关云门系统。", "story": "云门以厨库、三门等寺院空间答问，把日常建筑变成法门。\n禅宗公案大全：碧岩录卷（100则完整版）\n18", "meaning": "道场中处处都有入处。", "score": 3}, {"id": "biyanlu-87", "collection": "碧岩录", "collectionId": "biyanlu", "number": 87, "title": "药山看经", "source": "《碧岩录》第87则相关。", "story": "药山平日不许人死看经，却自己看经。学人疑惑，他借机点出看与不\n看的差别。", "meaning": "规则不是死的，关键是是否被文字转。", "score": 4}, {"id": "biyanlu-88", "collection": "碧岩录", "collectionId": "biyanlu", "number": 88, "title": "玄沙三种病人", "source": "《碧岩录》第88则相关玄沙系统。", "story": "玄沙谈盲、聋、哑等三种病人，追问如何接引最难接引者。", "meaning": "真正慈悲要面对最难沟通的生命处境。", "score": 4}, {"id": "biyanlu-89", "collection": "碧岩录", "collectionId": "biyanlu", "number": 89, "title": "云岩大悲手眼", "source": "《碧岩录》第89则；亦见《从容录》第54则。", "story": "云岩问大悲菩萨千手千眼，哪只是正眼？道吾说遍身是手眼。", "meaning": "慈悲不是局部功能，而是全身心回应世界。", "score": 5}, {"id": "biyanlu-90", "collection": "碧岩录", "collectionId": "biyanlu", "number": 90, "title": "智门般若体", "source": "《碧岩录》第90则相关智门系统。", "story": "智门围绕般若体与作用答问，避免学人把般若当抽象名词。", "meaning": "智慧必须落实为活用。", "score": 3}, {"id": "biyanlu-91", "collection": "碧岩录", "collectionId": "biyanlu", "number": 91, "title": "盐官犀牛扇子", "source": "《碧岩录》第91则；亦见《从容录》第25则。", "story": "盐官要犀牛扇子，侍者说扇子破了，盐官又要还犀牛儿。\n禅宗公案大全：碧岩录卷（100则完整版）\n19", "meaning": "物坏了，还要看见执物之心。", "score": 3}, {"id": "biyanlu-92", "collection": "碧岩录", "collectionId": "biyanlu", "number": 92, "title": "世尊升座", "source": "《碧岩录》第92则；亦见《从容录》第1则。", "story": "世尊一日升座，文殊白槌，世尊随即下座，一句未说。", "meaning": "无言说法，是禅门极简而有力的开场。", "score": 5}, {"id": "biyanlu-93", "collection": "碧岩录", "collectionId": "biyanlu", "number": 93, "title": "大光作舞", "source": "《碧岩录》第93则相关。", "story": "大光在问答中以作舞等动作回应，让学人无法只用语言理解。", "meaning": "身体姿态也可以成为法语。", "score": 3}, {"id": "biyanlu-94", "collection": "碧岩录", "collectionId": "biyanlu", "number": 94, "title": "楞严不见", "source": "《碧岩录》第94则；亦见《从容录》第88则相关。", "story": "围绕《楞严经》见与不见的经义，禅师以机锋破除文字理解。", "meaning": "读经不是解释概念，而是照见自己。", "score": 3}, {"id": "biyanlu-95", "collection": "碧岩录", "collectionId": "biyanlu", "number": 95, "title": "长庆三毒", "source": "《碧岩录》第95则相关。", "story": "长庆借贪嗔痴三毒或相关问答，检验学人烦恼处。", "meaning": "烦恼不是题外话，正是修行入口。", "score": 3}, {"id": "biyanlu-96", "collection": "碧岩录", "collectionId": "biyanlu", "number": 96, "title": "赵州三个转语", "source": "《碧岩录》第96则相关赵州系统。", "story": "赵州以连续转语应机，不让学人停在任一答案。", "meaning": "活句不断转动，死守一句便错。\n禅宗公案大全：碧岩录卷（100则完整版）\n20", "score": 3}, {"id": "biyanlu-97", "collection": "碧岩录", "collectionId": "biyanlu", "number": 97, "title": "金刚经轻贱", "source": "《碧岩录》第97则；亦见《从容录》第58则相关。", "story": "围绕《金刚经》中“为人轻贱，是人先世罪业应堕恶道”等经文展开禅门\n解读。", "meaning": "受轻贱处也可成为消业与转念入口。", "score": 4}, {"id": "biyanlu-98", "collection": "碧岩录", "collectionId": "biyanlu", "number": 98, "title": "天平两错", "source": "《碧岩录》第98则相关。", "story": "天平和尚在问答中两处被点为错，错中又露出机锋。", "meaning": "错不只是失败，也可能显出执著位置。", "score": 2}, {"id": "biyanlu-99", "collection": "碧岩录", "collectionId": "biyanlu", "number": 99, "title": "肃宗十身调御", "source": "《碧岩录》第99则相关帝王问法。", "story": "肃宗问国师十身调御等佛身义，国师以禅门方式回应帝王的经教问\n题。", "meaning": "佛身理论最终要回到当下见地。", "score": 3}, {"id": "biyanlu-100", "collection": "碧岩录", "collectionId": "biyanlu", "number": 100, "title": "巴陵吹毛剑", "source": "《碧岩录》第100则。", "story": "僧问巴陵“如何是吹毛剑”，巴陵答“珊瑚枝枝撑著月”。", "meaning": "最锋利的剑不必显杀气，也可化为清冷诗境。", "score": 4}, {"id": "congronglu-1", "collection": "从容录", "collectionId": "congronglu", "number": 1, "title": "世尊升座", "source": "《从容录》第1则；亦见《碧岩录》第92则。", "story": "世尊一日升座，文殊白槌说“谛观法王法，法王法如是”。世尊没有展开\n讲经，只是下座而去。", "meaning": "无言也能说法；真正的法不一定通过长篇解释呈现。", "score": 5}, {"id": "congronglu-2", "collection": "从容录", "collectionId": "congronglu", "number": 2, "title": "达磨廓然", "source": "《从容录》第2则；亦见《碧岩录》第1则。", "story": "梁武帝问达磨圣谛第一义，达磨答“廓然无圣”；帝问“对朕者谁”，达磨\n答“不识”。", "meaning": "破除功德、圣凡和自我确认的执著。\n禅宗公案大全：从容录卷（100则完整版）\n1", "score": 5}, {"id": "congronglu-3", "collection": "从容录", "collectionId": "congronglu", "number": 3, "title": "东印请祖", "source": "《从容录》第3则。", "story": "东印度国王请般若多罗受斋，问祖师为何不看经。祖师答：入息不居\n阴界，出息不涉众缘，常转如是经百千万亿卷。", "meaning": "真正读经不是翻纸，而是呼吸出入都不离法。", "score": 3}, {"id": "congronglu-4", "collection": "从容录", "collectionId": "congronglu", "number": 4, "title": "世尊指地", "source": "《从容录》第4则。", "story": "世尊与众行走时指地说“此处宜建梵刹”。帝释随手插一茎草，说“建梵\n刹已竟”，世尊微笑。", "meaning": "一念建立，一草即成道场；道场不只在宏大建筑中。", "score": 4}, {"id": "congronglu-5", "collection": "从容录", "collectionId": "congronglu", "number": 5, "title": "青原米价", "source": "《从容录》第5则。", "story": "僧问青原：“如何是佛法大意？”青原不讲玄理，只问“卢陵米作么价？”", "meaning": "佛法大意不离柴米日用。", "score": 4}, {"id": "congronglu-6", "collection": "从容录", "collectionId": "congronglu", "number": 6, "title": "马祖白黑", "source": "《从容录》第6则。", "story": "僧请马祖离四句绝百非直指西来意。马祖令他问智藏、百丈，最后评\n“藏头白，海头黑”。", "meaning": "看似绕路，实则让学人看见自己仍被“离四句”这个概念缠住。", "score": 3}, {"id": "congronglu-7", "collection": "从容录", "collectionId": "congronglu", "number": 7, "title": "药山升座", "source": "《从容录》第7则。", "story": "药山久不升座，院主请他为众说法。药山升座良久，却一句不说便下\n座归方丈。", "meaning": "无言也是说法；真正的法会不一定靠语言填满。", "score": 4}, {"id": "congronglu-8", "collection": "从容录", "collectionId": "congronglu", "number": 8, "title": "百丈野狐", "source": "《从容录》第8则；亦见《无门关》第2则。", "story": "老人因过去错答“不落因果”堕为野狐五百世。百丈答“不昧因果”，老人\n解脱。", "meaning": "因果不能被轻易否定，修行是清醒承担因果。", "score": 5}, {"id": "congronglu-9", "collection": "从容录", "collectionId": "congronglu", "number": 9, "title": "南泉斩猫", "source": "《从容录》第9则；亦见《无门关》第14则。", "story": "东西两堂争猫，南泉提猫逼众人道一句，众无对。赵州后来以草鞋戴\n头回应。", "meaning": "争执让人忘记生命本身；真正回答要跳出争执框架。", "score": 5}, {"id": "congronglu-10", "collection": "从容录", "collectionId": "congronglu", "number": 10, "title": "台山婆子", "source": "《从容录》第10则；亦见《无门关》第31则相关。", "story": "台山路上有婆子，僧问路，她总说“蓦直去”，等僧走几步又评点。赵州\n亲自去勘验。", "meaning": "路不只在脚下，也在当机是否明白。", "score": 4}, {"id": "congronglu-11", "collection": "从容录", "collectionId": "congronglu", "number": 11, "title": "云门两病", "source": "《从容录》第11则。", "story": "云门说光不透脱有两种病，法身也有两种病：执境、执空、执法身，\n都可能成为障碍。", "meaning": "越细微的修行境界，越可能隐藏执著。", "score": 3}, {"id": "congronglu-12", "collection": "从容录", "collectionId": "congronglu", "number": 12, "title": "地藏种田", "source": "《从容录》第12则。", "story": "修山主说南方佛法商量浩浩地，地藏说不如自己这里种田博饭吃。", "meaning": "空谈佛法不如在日常劳作中落实。", "score": 4}, {"id": "congronglu-13", "collection": "从容录", "collectionId": "congronglu", "number": 13, "title": "临济瞎驴", "source": "《从容录》第13则。", "story": "临济临终嘱三圣不要灭却正法眼藏。三圣一喝，临济说正法眼藏向这\n瞎驴边灭却。", "meaning": "传法不是仪式交接，而是活机能否延续。", "score": 3}, {"id": "congronglu-14", "collection": "从容录", "collectionId": "congronglu", "number": 14, "title": "廓侍过茶", "source": "《从容录》第14则。", "story": "廓侍者问德山诸圣去处，后来又在过茶时被德山点拨。寻常奉茶成了\n师徒勘验的场景。", "meaning": "日常服侍、递茶，也可以成为禅机。", "score": 3}, {"id": "congronglu-15", "collection": "从容录", "collectionId": "congronglu", "number": 15, "title": "仰山插锹", "source": "《从容录》第15则。", "story": "沩山问仰山从哪里来、田中多少人。仰山插下锹子，叉手而立。", "meaning": "不用语言，也可以完整呈现本分。", "score": 3}, {"id": "congronglu-16", "collection": "从容录", "collectionId": "congronglu", "number": 16, "title": "麻谷振锡", "source": "《从容录》第16则；亦见《碧岩录》第31则。", "story": "麻谷持锡到章敬，绕禅床三匝，振锡而立，章敬说是；到南泉处同样\n动作，南泉说不是。", "meaning": "动作本身不保证见地，关键在当机和人。\n禅宗公案大全：从容录卷（100则完整版）\n4", "score": 3}, {"id": "congronglu-17", "collection": "从容录", "collectionId": "congronglu", "number": 17, "title": "法眼毫厘", "source": "《从容录》第17则。", "story": "法眼以毫厘之差开示，指出一念差错，结果可能天地悬隔。", "meaning": "修行中的微细偏差，可能造成根本偏离。", "score": 3}, {"id": "congronglu-18", "collection": "从容录", "collectionId": "congronglu", "number": 18, "title": "赵州狗子", "source": "《从容录》第18则；亦见《无门关》第1则。", "story": "僧问狗子是否有佛性，赵州答“无”，把有无推理全部截断。", "meaning": "一个“无”字成为禅门大关。", "score": 5}, {"id": "congronglu-19", "collection": "从容录", "collectionId": "congronglu", "number": 19, "title": "云门须弥", "source": "《从容录》第19则。", "story": "云门以“须弥山”回应问法，巨大的山岳意象让人无处下口。", "meaning": "不可搬动之物，正好截断妄想。", "score": 3}, {"id": "congronglu-20", "collection": "从容录", "collectionId": "congronglu", "number": 20, "title": "地藏亲切", "source": "《从容录》第20则。", "story": "地藏禅师与学人讨论何为亲切，不从情感层面解释，而在当下问答中\n显露。", "meaning": "亲切不是熟悉亲近，而是直抵本分。", "score": 3}, {"id": "congronglu-21", "collection": "从容录", "collectionId": "congronglu", "number": 21, "title": "云岩扫地", "source": "《从容录》第21则。", "story": "云岩扫地时，师徒围绕“忙不忙”展开机锋。扫地不再只是杂务，而成为\n参禅现场。", "meaning": "日常劳动中最能看出是否被事转。\n禅宗公案大全：从容录卷（100则完整版）\n5", "score": 3}, {"id": "congronglu-22", "collection": "从容录", "collectionId": "congronglu", "number": 22, "title": "岩头拜喝", "source": "《从容录》第22则。", "story": "岩头在礼拜与喝之间呈现机锋，让来者无法停在恭敬或粗暴的表面。", "meaning": "拜与喝都只是手段，关键在是否相应。", "score": 2}, {"id": "congronglu-23", "collection": "从容录", "collectionId": "congronglu", "number": 23, "title": "鲁祖面壁", "source": "《从容录》第23则。", "story": "鲁祖常面壁而坐，来者面对他的沉默和背影，也等于面对自己的疑\n问。", "meaning": "沉默和背面也能成为接引。", "score": 3}, {"id": "congronglu-24", "collection": "从容录", "collectionId": "congronglu", "number": 24, "title": "雪峰看蛇", "source": "《从容录》第24则；雪峰鳖鼻蛇系统。", "story": "雪峰提醒众人南山有蛇，语带危险，也像在提醒修行中潜伏的险处。", "meaning": "危险常藏在看似平静之处。", "score": 3}, {"id": "congronglu-25", "collection": "从容录", "collectionId": "congronglu", "number": 25, "title": "盐官犀扇", "source": "《从容录》第25则；亦见《碧岩录》第91则。", "story": "盐官要犀牛扇子，侍者说扇子破了，盐官却要还犀牛儿。", "meaning": "物坏了，执物之心也要被看见。", "score": 3}, {"id": "congronglu-26", "collection": "从容录", "collectionId": "congronglu", "number": 26, "title": "仰山指雪", "source": "《从容录》第26则。", "story": "仰山借眼前白雪示机，学人若只看见雪，就错过了师家手眼。", "meaning": "自然景象也可以成为法语。\n禅宗公案大全：从容录卷（100则完整版）\n6", "score": 3}, {"id": "congronglu-27", "collection": "从容录", "collectionId": "congronglu", "number": 27, "title": "法眼指帘", "source": "《从容录》第27则；亦见《无门关》第26则相关。", "story": "法眼用手指帘，两个僧人同时去卷帘，法眼却说一得一失。", "meaning": "同样动作背后，可能是完全不同的心机。", "score": 4}, {"id": "congronglu-28", "collection": "从容录", "collectionId": "congronglu", "number": 28, "title": "护国三懡", "source": "《从容录》第28则。", "story": "护国禅师以“三懡㦬”等语勘验学人，让来者陷入狼狈处。", "meaning": "狼狈和羞愧，也可能成为看见自己的入口。", "score": 2}, {"id": "congronglu-29", "collection": "从容录", "collectionId": "congronglu", "number": 29, "title": "风穴铁牛", "source": "《从容录》第29则；亦见《碧岩录》第38则。", "story": "风穴说祖师心印如铁牛之机，去即印住，住即印破。", "meaning": "动静去住都不可执著。", "score": 3}, {"id": "congronglu-30", "collection": "从容录", "collectionId": "congronglu", "number": 30, "title": "大随劫火", "source": "《从容录》第30则；亦见《碧岩录》第29则。", "story": "僧问劫火洞然时这个坏不坏，大随答“坏”。", "meaning": "连最深的执著对象也不可当作永恒。", "score": 3}, {"id": "congronglu-31", "collection": "从容录", "collectionId": "congronglu", "number": 31, "title": "云门露柱", "source": "《从容录》第31则；亦见《碧岩录》第83则相关。", "story": "云门以露柱回应问佛问祖，把寺院柱子也变成说法者。", "meaning": "无情物也能说法。", "score": 3}, {"id": "congronglu-32", "collection": "从容录", "collectionId": "congronglu", "number": 32, "title": "仰山心境", "source": "《从容录》第32则。", "story": "仰山围绕心与境展开勘验，指出心境不可粗分两段。", "meaning": "心境不二，但执著不二也是病。", "score": 3}, {"id": "congronglu-33", "collection": "从容录", "collectionId": "congronglu", "number": 33, "title": "三圣金鳞", "source": "《从容录》第33则；亦见《碧岩录》第49则相关。", "story": "三圣以金鳞、出网、化龙等意象呈机，象征出格之人。", "meaning": "真正修行者不困在旧池塘。", "score": 3}, {"id": "congronglu-34", "collection": "从容录", "collectionId": "congronglu", "number": 34, "title": "风穴一尘", "source": "《从容录》第34则；亦见《碧岩录》第61则相关。", "story": "风穴以一尘举起、大地全收开示，一粒微尘中显全体世界。", "meaning": "一尘中可见大千。", "score": 3}, {"id": "congronglu-35", "collection": "从容录", "collectionId": "congronglu", "number": 35, "title": "洛浦伏膺", "source": "《从容录》第35则。", "story": "洛浦禅师参学中伏膺承当，经师家锻炼后显出见地。", "meaning": "真正承当不是口头认同，而是身心伏膺。", "score": 2}, {"id": "congronglu-36", "collection": "从容录", "collectionId": "congronglu", "number": 36, "title": "马师不安", "source": "《从容录》第36则；亦见《碧岩录》第3则。", "story": "马祖病中被问近况，答“日面佛，月面佛”。", "meaning": "病中不失本分，生死中仍可自在。", "score": 4}, {"id": "congronglu-37", "collection": "从容录", "collectionId": "congronglu", "number": 37, "title": "沩山业识", "source": "《从容录》第37则；亦见《碧岩录》第70则相关。", "story": "沩山谈业识茫茫，学人被逼问生命流转的根。", "meaning": "不照见业识，人便在惯性中漂流。", "score": 3}, {"id": "congronglu-38", "collection": "从容录", "collectionId": "congronglu", "number": 38, "title": "临济真人", "source": "《从容录》第38则；《临济录》。", "story": "临济说赤肉团上有一无位真人，常从面门出入。", "meaning": "人不只是身份、标签和角色，内里有活泼真实者。", "score": 5}, {"id": "congronglu-39", "collection": "从容录", "collectionId": "congronglu", "number": 39, "title": "赵州洗钵", "source": "《从容录》第39则；亦见《无门关》第7则。", "story": "僧人求赵州指示，赵州问吃粥了没有，答吃了，便令洗钵。", "meaning": "道就在吃饭洗碗处。", "score": 5}, {"id": "congronglu-40", "collection": "从容录", "collectionId": "congronglu", "number": 40, "title": "云门白黑", "source": "《从容录》第40则。", "story": "云门以白黑等对立语境接人，让学人看见分别心。", "meaning": "黑白分明处，也要识得不落两边。", "score": 3}, {"id": "congronglu-41", "collection": "从容录", "collectionId": "congronglu", "number": 41, "title": "洛浦临终", "source": "《从容录》第41则。", "story": "洛浦临终仍以机锋示众，把生命最后时刻也变成说法现场。", "meaning": "临终才是真正检验修行处。", "score": 3}, {"id": "congronglu-42", "collection": "从容录", "collectionId": "congronglu", "number": 42, "title": "南阳净瓶", "source": "《从容录》第42则。", "story": "南阳国师借净瓶设问，考验学人是否落入物名和形相。", "meaning": "物名只是方便，执名便迷。", "score": 3}, {"id": "congronglu-43", "collection": "从容录", "collectionId": "congronglu", "number": 43, "title": "罗山起灭", "source": "《从容录》第43则。", "story": "罗山围绕起灭、生灭发问，让学人观察念头迁流。", "meaning": "见起灭而不被起灭转。", "score": 2}, {"id": "congronglu-44", "collection": "从容录", "collectionId": "congronglu", "number": 44, "title": "兴阳妙翅", "source": "《从容录》第44则。", "story": "兴阳借妙翅鸟等意象显示飞腾出格的机用。", "meaning": "真正见地有凌空出格之力。", "score": 2}, {"id": "congronglu-45", "collection": "从容录", "collectionId": "congronglu", "number": 45, "title": "觉经四节", "source": "《从容录》第45则。", "story": "禅师围绕经典四节展开问答，把经义转成当下勘验。", "meaning": "读经要读活，不可只守文字。", "score": 2}, {"id": "congronglu-46", "collection": "从容录", "collectionId": "congronglu", "number": 46, "title": "德山学毕", "source": "《从容录》第46则。", "story": "德山原是讲经僧，后来参禅后烧疏钞、放下旧学，形成棒喝家风。", "meaning": "学问到头，还要放下学问。", "score": 4}, {"id": "congronglu-47", "collection": "从容录", "collectionId": "congronglu", "number": 47, "title": "赵州柏树", "source": "《从容录》第47则；亦见《无门关》第37则。", "story": "僧问祖师西来意，赵州答庭前柏树子。\n禅宗公案大全：从容录卷（100则完整版）\n10", "meaning": "最深的问题，答案就在眼前。", "score": 5}, {"id": "congronglu-48", "collection": "从容录", "collectionId": "congronglu", "number": 48, "title": "摩经不二", "source": "《从容录》第48则；《维摩诘经》。", "story": "诸菩萨各说不二法门，维摩默然，文殊赞其真入不二。", "meaning": "真正不二处，语言沉默下来。", "score": 5}, {"id": "congronglu-49", "collection": "从容录", "collectionId": "congronglu", "number": 49, "title": "洞山供真", "source": "《从容录》第49则。", "story": "洞山围绕供养真影、真像展开问答，追问何者为真。", "meaning": "真不在画像中，也不离当下承当。", "score": 2}, {"id": "congronglu-50", "collection": "从容录", "collectionId": "congronglu", "number": 50, "title": "雪峰甚么", "source": "《从容录》第50则；亦见《碧岩录》第51则相关。", "story": "雪峰见僧来，以“是什么”逼问，僧也以“是什么”回应。", "meaning": "“是什么”不是定义题，而是当下见地的逼问。", "score": 3}, {"id": "congronglu-51", "collection": "从容录", "collectionId": "congronglu", "number": 51, "title": "法眼船陆", "source": "《从容录》第51则。", "story": "法眼借船与陆地之喻接人，考验学人是否知渡岸和舍筏。", "meaning": "法门如船，过河后不可执船。", "score": 3}, {"id": "congronglu-52", "collection": "从容录", "collectionId": "congronglu", "number": 52, "title": "曹山法身", "source": "《从容录》第52则。", "story": "曹山围绕法身问答，指出法身不是可执的清净境界。", "meaning": "执法身为境界，也会成为病。\n禅宗公案大全：从容录卷（100则完整版）\n11", "score": 3}, {"id": "congronglu-53", "collection": "从容录", "collectionId": "congronglu", "number": 53, "title": "黄檗噇糟", "source": "《从容录》第53则；亦见《碧岩录》第11则。", "story": "黄檗呵斥众人为噇酒糟汉，又说大唐国里无禅师。", "meaning": "不要在陈腐知解和二手经验中讨生活。", "score": 4}, {"id": "congronglu-54", "collection": "从容录", "collectionId": "congronglu", "number": 54, "title": "云岩大悲", "source": "《从容录》第54则；亦见《碧岩录》第89则。", "story": "问大悲菩萨千手千眼哪只是正眼，道吾说遍身是手眼。", "meaning": "慈悲不是局部能力，而是全身心回应。", "score": 5}, {"id": "congronglu-55", "collection": "从容录", "collectionId": "congronglu", "number": 55, "title": "雪峰饭头", "source": "《从容录》第55则。", "story": "雪峰曾作饭头，在厨房、饭食和杂务中磨炼自己。", "meaning": "低处杂务也能养成大道器。", "score": 4}, {"id": "congronglu-56", "collection": "从容录", "collectionId": "congronglu", "number": 56, "title": "密师白兔", "source": "《从容录》第56则。", "story": "密师借白兔等动物意象接人，借灵动之物显机。", "meaning": "一只兔子的动静也可成为禅机。", "score": 2}, {"id": "congronglu-57", "collection": "从容录", "collectionId": "congronglu", "number": 57, "title": "严阳一物", "source": "《从容录》第57则。", "story": "严阳尊者被问一物，师家逼他离开对象化理解。", "meaning": "若把“一物”当某个东西，已经错过。", "score": 2}, {"id": "congronglu-58", "collection": "从容录", "collectionId": "congronglu", "number": 58, "title": "金刚经轻贱", "source": "《从容录》第58则；《金刚经》相关。", "story": "围绕《金刚经》中“为人轻贱”之句展开禅门拈提。", "meaning": "受轻贱处也可成为观心和转业处。", "score": 4}, {"id": "congronglu-59", "collection": "从容录", "collectionId": "congronglu", "number": 59, "title": "青林死蛇", "source": "《从容录》第59则。", "story": "青林以死蛇作喻，提醒学人不要把死物当活法。", "meaning": "死句、死见解不能当成真实禅机。", "score": 2}, {"id": "congronglu-60", "collection": "从容录", "collectionId": "congronglu", "number": 60, "title": "铁磨牸牛", "source": "《从容录》第60则。", "story": "刘铁磨与禅师机锋往来，常以牸牛等语显示强悍风格。", "meaning": "女禅者也可机锋峻烈，不让须眉。", "score": 4}, {"id": "congronglu-61", "collection": "从容录", "collectionId": "congronglu", "number": 61, "title": "干峰一画", "source": "《从容录》第61则；亦见《无门关》第48则相关。", "story": "干峰以一画回应涅槃路头之问，把路头落在当下一划。", "meaning": "一画即一路，关键在当下见。", "score": 3}, {"id": "congronglu-62", "collection": "从容录", "collectionId": "congronglu", "number": 62, "title": "米胡悟否", "source": "《从容录》第62则。", "story": "米胡设问人悟不悟，借问答勘验学人是否真到。", "meaning": "悟不是自称，要经得起问。", "score": 2}, {"id": "congronglu-63", "collection": "从容录", "collectionId": "congronglu", "number": 63, "title": "赵州问死", "source": "《从容录》第63则。", "story": "赵州围绕死、活、去处发问，让学人直面生死关口。", "meaning": "生死问题不能只用安慰语糊弄。", "score": 4}, {"id": "congronglu-64", "collection": "从容录", "collectionId": "congronglu", "number": 64, "title": "子昭承嗣", "source": "《从容录》第64则。", "story": "子昭承嗣法脉的机缘被拈出，重在传承是否真实。", "meaning": "传承不是名分，而是见地相续。", "score": 2}, {"id": "congronglu-65", "collection": "从容录", "collectionId": "congronglu", "number": 65, "title": "首山新妇", "source": "《从容录》第65则。", "story": "首山以新妇等生活比喻接人，借家庭角色显禅机。", "meaning": "世俗身份也可成为说法材料。", "score": 3}, {"id": "congronglu-66", "collection": "从容录", "collectionId": "congronglu", "number": 66, "title": "九峰头尾", "source": "《从容录》第66则。", "story": "九峰围绕头尾、始终设问，逼人看见前后分别。", "meaning": "始终若不统一，见地便不稳。", "score": 2}, {"id": "congronglu-67", "collection": "从容录", "collectionId": "congronglu", "number": 67, "title": "华严智慧", "source": "《从容录》第67则。", "story": "围绕《华严经》智慧义展开禅门拈提，把经教转为机用。", "meaning": "华严智慧要落实到当下互摄无碍。", "score": 3}, {"id": "congronglu-68", "collection": "从容录", "collectionId": "congronglu", "number": 68, "title": "夹山挥剑", "source": "《从容录》第68则。", "story": "夹山以挥剑等峻烈动作示机，让学人无法躲闪。", "meaning": "禅机如剑，断人犹豫和知解。", "score": 3}, {"id": "congronglu-69", "collection": "从容录", "collectionId": "congronglu", "number": 69, "title": "南泉白牯", "source": "《从容录》第69则；亦见《碧岩录》第69则。", "story": "南泉说来生要作山下檀越家水牯牛，众人从中参究还债与自在。", "meaning": "圣凡不二，连作牛也可显道。", "score": 4}, {"id": "congronglu-70", "collection": "从容录", "collectionId": "congronglu", "number": 70, "title": "进山问性", "source": "《从容录》第70则。", "story": "进山问性，师家不许他停在性理名相中。", "meaning": "自性不是可被解释的对象。", "score": 2}, {"id": "congronglu-71", "collection": "从容录", "collectionId": "congronglu", "number": 71, "title": "翠岩眉毛", "source": "《从容录》第71则；亦见《碧岩录》第8则。", "story": "翠岩问一夏为众说法后眉毛还在么，诸师各作评点。", "meaning": "说法者必须自检是否落入虚妄。", "score": 3}, {"id": "congronglu-72", "collection": "从容录", "collectionId": "congronglu", "number": 72, "title": "中邑猕猴", "source": "《从容录》第72则。", "story": "中邑以猕猴等灵动物象答问，考验学人是否随影逐形。", "meaning": "心猿意马若不见，便被境转。", "score": 3}, {"id": "congronglu-73", "collection": "从容录", "collectionId": "congronglu", "number": 73, "title": "曹山孝满", "source": "《从容录》第73则。", "story": "曹山以孝满、服制等语境接人，借世法显佛法。\n禅宗公案大全：从容录卷（100则完整版）\n15", "meaning": "人伦世法中也藏修行关口。", "score": 2}, {"id": "congronglu-74", "collection": "从容录", "collectionId": "congronglu", "number": 74, "title": "法眼质名", "source": "《从容录》第74则。", "story": "法眼围绕名称、指称展开追问，逼人离开名相。", "meaning": "名字不是实物，执名便迷。", "score": 3}, {"id": "congronglu-75", "collection": "从容录", "collectionId": "congronglu", "number": 75, "title": "瑞岩常理", "source": "《从容录》第75则；亦见《无门关》第12则相关。", "story": "瑞岩自唤主人公，提醒自己惺惺不受人瞒。", "meaning": "每日自我唤醒，是最朴素的修行。", "score": 5}, {"id": "congronglu-76", "collection": "从容录", "collectionId": "congronglu", "number": 76, "title": "首山三句", "source": "《从容录》第76则。", "story": "首山以三句示众，层层推进又层层破除。", "meaning": "三句不是公式，而是引人离开固定理解。", "score": 2}, {"id": "congronglu-77", "collection": "从容录", "collectionId": "congronglu", "number": 77, "title": "仰山随分", "source": "《从容录》第77则。", "story": "仰山随分接人，不多不少地回应来机。", "meaning": "真正接引要随根器分寸。", "score": 2}, {"id": "congronglu-78", "collection": "从容录", "collectionId": "congronglu", "number": 78, "title": "云门糊饼", "source": "《从容录》第78则；云门饼系统。", "story": "云门以糊饼回应问法，把玄妙问题落在可吃的饼上。", "meaning": "佛法不离饥来吃饭。\n禅宗公案大全：从容录卷（100则完整版）\n16", "score": 5}, {"id": "congronglu-79", "collection": "从容录", "collectionId": "congronglu", "number": 79, "title": "长沙进步", "source": "《从容录》第79则。", "story": "长沙围绕进步发问，逼学人看见前进也可能是执著。", "meaning": "修行不只是向前，也要知道何处放下。", "score": 3}, {"id": "congronglu-80", "collection": "从容录", "collectionId": "congronglu", "number": 80, "title": "龙牙过板", "source": "《从容录》第80则。", "story": "龙牙借过板等丛林日常物事答问，验人是否识得本分。", "meaning": "寺院日常规矩中也有禅机。", "score": 2}, {"id": "congronglu-81", "collection": "从容录", "collectionId": "congronglu", "number": 81, "title": "玄沙到县", "source": "《从容录》第81则。", "story": "玄沙到县城等行脚事件中，借路途和场景接引学人。", "meaning": "市井路上也可参禅。", "score": 3}, {"id": "congronglu-82", "collection": "从容录", "collectionId": "congronglu", "number": 82, "title": "云门声色", "source": "《从容录》第82则。", "story": "云门围绕声色答问，使学人看见自己如何被见闻牵动。", "meaning": "声色不是障碍，随声逐色才是障碍。", "score": 3}, {"id": "congronglu-83", "collection": "从容录", "collectionId": "congronglu", "number": 83, "title": "道吾看病", "source": "《从容录》第83则。", "story": "道吾探病问疾，将病痛场景转为生死与修行的勘验。", "meaning": "病中最能看出平日功夫。", "score": 4}, {"id": "congronglu-84", "collection": "从容录", "collectionId": "congronglu", "number": 84, "title": "俱胝一指", "source": "《从容录》第84则；亦见《无门关》第3则。", "story": "俱胝以一指接人，童子模仿被截指，回头见一指而悟。", "meaning": "模仿形式不是真悟，断执处才见法。", "score": 4}, {"id": "congronglu-85", "collection": "从容录", "collectionId": "congronglu", "number": 85, "title": "国师塔样", "source": "《从容录》第85则；亦见《碧岩录》第18则。", "story": "国师要无缝塔，皇帝请问塔样，国师沉默良久。", "meaning": "真正归处无形无缝，不可图样化。", "score": 3}, {"id": "congronglu-86", "collection": "从容录", "collectionId": "congronglu", "number": 86, "title": "临济大悟", "source": "《从容录》第86则；《临济录》。", "story": "临济三问黄檗佛法大意，三次被打。后来到大愚处被点醒，才知黄檗\n老婆心切。", "meaning": "痛处回头看，才知道棒下全是慈悲。", "score": 5}, {"id": "congronglu-87", "collection": "从容录", "collectionId": "congronglu", "number": 87, "title": "疏山有无", "source": "《从容录》第87则。", "story": "疏山围绕有无问答，使学人看见自己如何落入两边。", "meaning": "有无两边都不是究竟。", "score": 2}, {"id": "congronglu-88", "collection": "从容录", "collectionId": "congronglu", "number": 88, "title": "楞严不见", "source": "《从容录》第88则；《楞严经》相关。", "story": "围绕见与不见的经义展开禅门机锋，不让学人停在经文字面。", "meaning": "读经要照见自己，不只是解释概念。", "score": 3}, {"id": "congronglu-89", "collection": "从容录", "collectionId": "congronglu", "number": 89, "title": "洞山无草", "source": "《从容录》第89则。", "story": "洞山说无草处或草木境界，借自然物象勘验学人。", "meaning": "有草无草都是境，关键是是否被境转。", "score": 2}, {"id": "congronglu-90", "collection": "从容录", "collectionId": "congronglu", "number": 90, "title": "仰山谨白", "source": "《从容录》第90则。", "story": "仰山以“谨白”等仪式性语言呈机，礼貌形式中藏锋。", "meaning": "庄重语言也可成为禅门活句。", "score": 2}, {"id": "congronglu-91", "collection": "从容录", "collectionId": "congronglu", "number": 91, "title": "南泉牡丹", "source": "《从容录》第91则。", "story": "南泉以牡丹花等美丽物象发问，让学人看见看花时的梦幻心。", "meaning": "花美如梦，见花者也当自省。", "score": 4}, {"id": "congronglu-92", "collection": "从容录", "collectionId": "congronglu", "number": 92, "title": "云门一宝", "source": "《从容录》第92则；亦见《碧岩录》第62则相关。", "story": "云门说乾坤之内、宇宙之间有一宝，秘在形山。", "meaning": "宝不在外，而在此身此心中。", "score": 4}, {"id": "congronglu-93", "collection": "从容录", "collectionId": "congronglu", "number": 93, "title": "鲁祖不会", "source": "《从容录》第93则。", "story": "鲁祖以不会、不答等方式接人，让来者失去可抓取答案。", "meaning": "不会也是机锋，不是无知。", "score": 2}, {"id": "congronglu-94", "collection": "从容录", "collectionId": "congronglu", "number": 94, "title": "洞山不安", "source": "《从容录》第94则。", "story": "洞山病中或不安时仍以机锋接人，问疾成为参禅现场。", "meaning": "不安处正是观心处。", "score": 3}, {"id": "congronglu-95", "collection": "从容录", "collectionId": "congronglu", "number": 95, "title": "临济一画", "source": "《从容录》第95则。", "story": "临济以一画或一划示机，截断复杂解释。", "meaning": "一划也可成法，不在言多。", "score": 3}, {"id": "congronglu-96", "collection": "从容录", "collectionId": "congronglu", "number": 96, "title": "九峰不肯", "source": "《从容录》第96则。", "story": "九峰面对某种说法不肯承当，显出宗师严格眼目。", "meaning": "真正的“不肯”是护持正眼。", "score": 2}, {"id": "congronglu-97", "collection": "从容录", "collectionId": "congronglu", "number": 97, "title": "光帝幞头", "source": "《从容录》第97则。", "story": "光帝与禅师围绕幞头等帝王服饰问答，宫廷日常中显禅机。", "meaning": "身份装束不能遮住本来人。", "score": 3}, {"id": "congronglu-98", "collection": "从容录", "collectionId": "congronglu", "number": 98, "title": "洞山常切", "source": "《从容录》第98则。", "story": "洞山开示“常切”等语，提醒修行不可离开切身处。", "meaning": "真正修行必须贴身、切己。", "score": 3}, {"id": "congronglu-99", "collection": "从容录", "collectionId": "congronglu", "number": 99, "title": "云门钵桶", "source": "《从容录》第99则。", "story": "云门以钵桶、斋粥等丛林日用品回应问法。", "meaning": "吃饭用具也能显出法。", "score": 4}, {"id": "congronglu-100", "collection": "从容录", "collectionId": "congronglu", "number": 100, "title": "琅琊山河", "source": "《从容录》第100则。", "story": "琅琊围绕山河大地答问，收束百则公案。", "meaning": "山河大地本身就是最后的开示。", "score": 4}, {"id": "denglu-1", "collection": "灯录选粹", "collectionId": "denglu", "number": 1, "title": "释迦拈花", "source": "禅宗传灯传统；亦见《无门关》第6则系统。", "story": "灵山会上，世尊拈起一枝花示众，众人都不明白，唯有迦叶破颜微\n笑。世尊于是将“正法眼藏、涅槃妙心”付嘱迦叶，成为禅宗“以心传心”的象征。", "meaning": "最高的传承不一定靠语言，而在心心相印。", "score": 5}, {"id": "denglu-2", "collection": "灯录选粹", "collectionId": "denglu", "number": 2, "title": "达磨面壁", "source": "《景德传灯录》、达磨传灯系统。", "story": "达磨西来后，梁武帝不能契合其意，达磨渡江北上，在少林面壁九\n年。传说中他沉默而坐，等待真正能承当心法的人。\n禅宗公案大全：灯录选粹与传播索引\n1", "meaning": "真正的修行不是急于表达，而是以长久沉潜守住本分。", "score": 5}, {"id": "denglu-3", "collection": "灯录选粹", "collectionId": "denglu", "number": 3, "title": "慧可立雪", "source": "达磨、慧可传灯系统。", "story": "慧可为求法，在雪中久立，甚至断臂以表决心。达磨起初不许，后来\n见其志切，才引导他从“觅心了不可得”处入门。", "meaning": "求法不是外在苦行，而是把求心之心逼到尽头。", "score": 5}, {"id": "denglu-4", "collection": "灯录选粹", "collectionId": "denglu", "number": 4, "title": "慧可觅心", "source": "《景德传灯录》、达磨安心系统。", "story": "慧可说自己心不安，请达磨安心。达磨说“将心来，与汝安”。慧可寻找\n此心，最后说“觅心了不可得”，达磨说“与汝安心竟”。", "meaning": "烦恼之心若被认真追寻，会发现它并无固定实体。", "score": 5}, {"id": "denglu-5", "collection": "灯录选粹", "collectionId": "denglu", "number": 5, "title": "三祖信心铭", "source": "三祖僧璨《信心铭》。", "story": "《信心铭》开篇说“至道无难，唯嫌拣择”，指出大道并不遥远，真正困\n难的是人的取舍、好恶、分别。后世赵州等禅师多次拈此语为公案。", "meaning": "修行的核心障碍往往不是外境，而是不断比较选择的心。", "score": 4}, {"id": "denglu-6", "collection": "灯录选粹", "collectionId": "denglu", "number": 6, "title": "六祖本来面目", "source": "《六祖坛经》；亦见《无门关》第23则系统。", "story": "惠明追赶六祖求法，六祖没有给他一套教义，而是问：“不思善，不思\n恶，正与么时，哪个是明上座本来面目？”惠明当下有省。", "meaning": "当善恶、得失、身份暂时放下时，人得以回看未被遮蔽的自己。", "score": 5}, {"id": "denglu-7", "collection": "灯录选粹", "collectionId": "denglu", "number": 7, "title": "风幡心动", "source": "《六祖坛经》；亦见《无门关》第29则。", "story": "两位僧人争论是风动还是幡动。六祖说：“不是风动，不是幡动，仁者\n心动。”争论瞬间从外物转回自心。", "meaning": "人以为自己在讨论外境，其实常常是在投射内心波动。", "score": 5}, {"id": "denglu-8", "collection": "灯录选粹", "collectionId": "denglu", "number": 8, "title": "菩提本无树", "source": "《六祖坛经》。", "story": "神秀偈说“身是菩提树，心如明镜台”，惠能偈说“菩提本无树，明镜亦\n非台”。两偈显出渐修与顿悟的不同气象。", "meaning": "若执著有一个可擦拭、可成就的心台，仍未离相。", "score": 5}, {"id": "denglu-9", "collection": "灯录选粹", "collectionId": "denglu", "number": 9, "title": "不识本心学法无益", "source": "《六祖坛经》系统。", "story": "六祖强调识自本心、见自本性。若只在经文、仪式、外相上用力，而\n不能回到本心，学得越多也可能离道越远。", "meaning": "佛法不是知识堆积，而是回到自心的明见。", "score": 4}, {"id": "denglu-10", "collection": "灯录选粹", "collectionId": "denglu", "number": 10, "title": "南岳磨砖", "source": "《景德传灯录》、马祖参南岳系统。", "story": "马祖坐禅，南岳怀让在旁磨砖。马祖问磨砖作什么，南岳说磨作镜。\n马祖说砖岂能成镜，南岳反问坐禅岂能成佛。", "meaning": "形式本身不能保证觉悟；若执坐相，坐禅也可能成执著。", "score": 5}, {"id": "denglu-11", "collection": "灯录选粹", "collectionId": "denglu", "number": 11, "title": "马祖即心即佛", "source": "马祖语录；亦见《无门关》第30则。", "story": "大梅问马祖如何是佛，马祖答“即心是佛”。大梅由此入道，后来马祖又\n派人试探他，告知“近日又道非心非佛”，大梅仍不动摇。", "meaning": "佛不在心外，但“即心是佛”也不是口号。", "score": 4}, {"id": "denglu-12", "collection": "灯录选粹", "collectionId": "denglu", "number": 12, "title": "马祖非心非佛", "source": "马祖语录；亦见《无门关》第33则。", "story": "马祖有时说“即心是佛”，有时又说“非心非佛”。看似矛盾，实则都是对\n不同执著下不同药方。", "meaning": "禅师的话不可做成固定理论；药对病才是活法。", "score": 4}, {"id": "denglu-13", "collection": "灯录选粹", "collectionId": "denglu", "number": 13, "title": "百丈一日不作一日不食", "source": "百丈怀海传记、丛林清规传统。", "story": "百丈年老仍坚持劳作，弟子心疼，把工具藏起。他找不到工具，便不\n吃饭，说“一日不作，一日不食”。", "meaning": "禅不是脱离劳动的清谈，而是在劳动中落实修行。", "score": 5}, {"id": "denglu-14", "collection": "灯录选粹", "collectionId": "denglu", "number": 14, "title": "百丈野鸭子", "source": "《碧岩录》第53则；马祖、百丈系统。", "story": "马祖与百丈见野鸭飞过。马祖问是什么，百丈答野鸭子；马祖追问飞\n到哪里去了，并扭百丈鼻子。百丈痛叫，马祖说又道飞过去也。", "meaning": "以为境界飞走了，其实痛切当下从未离开。", "score": 5}, {"id": "denglu-15", "collection": "灯录选粹", "collectionId": "denglu", "number": 15, "title": "黄檗棒下临济", "source": "《临济录》、黄檗与临济传灯系统。", "story": "临济三次问佛法大意，三次被黄檗打。后来到大愚处才明白黄檗并非\n粗暴，而是老婆心切。", "meaning": "真正的打击有时是慈悲，痛处回头才见用心。", "score": 5}, {"id": "denglu-16", "collection": "灯录选粹", "collectionId": "denglu", "number": 16, "title": "临济无位真人", "source": "《临济录》；亦见《从容录》第38则系统。", "story": "临济说赤肉团上有一无位真人，常从面门出入。有人问如何是无位真\n人，临济下禅床抓住对方追问。", "meaning": "人不只是身份、职位、标签，内里有不被位次规定的活泼真实者。", "score": 5}, {"id": "denglu-17", "collection": "灯录选粹", "collectionId": "denglu", "number": 17, "title": "临济喝", "source": "《临济录》。", "story": "临济宗以“喝”著称，但临济的喝不是情绪发泄，而是按主宾、照用、杀\n活不同情境而出。有时一喝截断迟疑，有时一喝显露来者所处位置。", "meaning": "真正的强烈表达不是粗暴，而是精准地切断妄想。", "score": 4}, {"id": "denglu-18", "collection": "灯录选粹", "collectionId": "denglu", "number": 18, "title": "德山棒", "source": "德山宣鉴语录、临济宗传统。", "story": "德山以棒接人，与“临济喝”并称。来者若在语句上打转，德山常以一棒\n打断，让对方无法继续依赖知解。", "meaning": "当语言成了遮蔽，棒喝便成为另一种开示。", "score": 4}, {"id": "denglu-19", "collection": "灯录选粹", "collectionId": "denglu", "number": 19, "title": "德山烧疏钞", "source": "德山宣鉴传记。", "story": "德山原精通《金刚经》，挑着疏钞南下破禅。后来被龙潭点醒后，把多\n年注疏付之一炬。", "meaning": "知识可贵，但执著知识会挡住直接体验。", "score": 5}, {"id": "denglu-20", "collection": "灯录选粹", "collectionId": "denglu", "number": 20, "title": "龙潭吹烛", "source": "《无门关》第28则；德山、龙潭系统。", "story": "德山夜参龙潭，出门见黑。龙潭点烛给他，他正要接过，龙潭忽然吹\n灭烛火，德山当下大悟。\n禅宗公案大全：灯录选粹与传播索引\n5", "meaning": "外在光明被吹灭时，人才可能发现真正明处。", "score": 5}, {"id": "denglu-21", "collection": "灯录选粹", "collectionId": "denglu", "number": 21, "title": "南泉平常心是道", "source": "《无门关》第19则。", "story": "赵州问南泉如何是道。南泉说“平常心是道”。赵州问可否趣向，南泉说\n一有趋向就违背。", "meaning": "道不在奇特境界，而在不造作、不攀缘的平常心。", "score": 5}, {"id": "denglu-22", "collection": "灯录选粹", "collectionId": "denglu", "number": 22, "title": "赵州吃茶去", "source": "《五灯会元》、赵州语录。", "story": "赵州问来僧是否曾到此，僧答曾到，赵州说“吃茶去”；另一僧答不曾\n到，赵州也说“吃茶去”。院主不解，赵州也叫他吃茶去。", "meaning": "对不同人说同一句，不是机械重复，而是让人回到当下。", "score": 5}, {"id": "denglu-23", "collection": "灯录选粹", "collectionId": "denglu", "number": 23, "title": "赵州十二时", "source": "赵州语录系统。", "story": "赵州常从日常十二时辰中显出禅机，吃饭、穿衣、行住坐卧皆可参。\n所谓古佛赵州，不在高谈玄理，而在日用中活出本分。", "meaning": "真正修行不离一天十二时辰。", "score": 4}, {"id": "denglu-24", "collection": "灯录选粹", "collectionId": "denglu", "number": 24, "title": "赵州无字", "source": "《无门关》第1则；赵州语录。", "story": "一“无”字成为后世禅门最重要话头之一。参禅者不是把“无”解释成无或\n没有，而是将全副身心投入此一关口。", "meaning": "公案不是谜底，而是逼人突破知解的工具。", "score": 5}, {"id": "denglu-25", "collection": "灯录选粹", "collectionId": "denglu", "number": 25, "title": "南泉庭前花如梦", "source": "《碧岩录》第40则系统。", "story": "陆亘谈天地同根、万物一体，南泉指庭前花说，时人看此一株花如梦\n相似。高妙理论忽然落到庭前花上。", "meaning": "如果不能真实看见眼前一花，高谈万物一体仍像梦话。", "score": 4}, {"id": "denglu-26", "collection": "灯录选粹", "collectionId": "denglu", "number": 26, "title": "云门日日是好日", "source": "《碧岩录》第6则。", "story": "云门说十五日以前不问你，十五日以后道一句来。随后自代曰：“日日\n是好日。”这不是鸡汤式乐观，而是超越顺逆的承当。", "meaning": "日日都可成为道场，关键不在日子好坏，而在心是否被境转。", "score": 5}, {"id": "denglu-27", "collection": "灯录选粹", "collectionId": "denglu", "number": 27, "title": "云门屎橛", "source": "《无门关》第21则。", "story": "僧问如何是佛，云门答“干屎橛”。粗粝的回答打碎了学人对佛的圣洁想\n象。", "meaning": "佛若被做成神圣标签，就又成了偶像。", "score": 5}, {"id": "denglu-28", "collection": "灯录选粹", "collectionId": "denglu", "number": 28, "title": "云门饼", "source": "《碧岩录》第77则、《从容录》第78则系统。", "story": "云门以糊饼、胡饼等食物回应佛法问题。学人想要高远答案，他却把\n问题落回可吃、可触的日用物。", "meaning": "饥来吃饭，日用即真。", "score": 5}, {"id": "denglu-29", "collection": "灯录选粹", "collectionId": "denglu", "number": 29, "title": "云门一字关", "source": "云门语录系统。", "story": "云门常以一个字作答，如“关”“普”“露”等。字越少，越不给学人铺陈解\n释的空间。", "meaning": "一句乃至一字都可成为参究关口。", "score": 4}, {"id": "denglu-30", "collection": "灯录选粹", "collectionId": "denglu", "number": 30, "title": "云门露柱", "source": "《从容录》第31则、《碧岩录》第83则系统。", "story": "云门以露柱答问，把寺院中的柱子变成说法者。学人若只把柱子当\n物，就错过其法机。", "meaning": "无情物也能说法，关键在见者之眼。", "score": 3}, {"id": "denglu-31", "collection": "灯录选粹", "collectionId": "denglu", "number": 31, "title": "洞山过水", "source": "洞山良价传记。", "story": "洞山过水时见水中倒影，忽然领会“切忌从他觅，迢迢与我疏；我今独\n自往，处处得逢渠”。倒影引他从向外寻求转回自身。", "meaning": "真正要找的东西，并不在外面另一个地方。", "score": 5}, {"id": "denglu-32", "collection": "灯录选粹", "collectionId": "denglu", "number": 32, "title": "洞山麻三斤", "source": "《无门关》第18则、《碧岩录》第12则。", "story": "僧问如何是佛，洞山答“麻三斤”。具体重量与日常物件，截断了抽象佛\n理追问。", "meaning": "佛不离眼前一物，但也不可把一物解释成佛。", "score": 5}, {"id": "denglu-33", "collection": "灯录选粹", "collectionId": "denglu", "number": 33, "title": "曹山宾主", "source": "曹洞宗语录系统。", "story": "曹洞宗重视宾主、偏正、回互之法。曹山常通过问答让学人看见自己\n是落在宾位、主位，还是能自在回互。\n禅宗公案大全：灯录选粹与传播索引\n8", "meaning": "修行不是单向答案，而是关系与位置中的活用。", "score": 3}, {"id": "denglu-34", "collection": "灯录选粹", "collectionId": "denglu", "number": 34, "title": "法眼慧超", "source": "《碧岩录》第7则。", "story": "慧超问“如何是佛”，法眼答“汝是慧超”。他没有解释佛是什么，而把提\n问者送回自己。", "meaning": "向外找佛，不如回看当下这个问者。", "score": 4}, {"id": "denglu-35", "collection": "灯录选粹", "collectionId": "denglu", "number": 35, "title": "法眼曹源一滴水", "source": "法眼语录、《五灯会元》系统。", "story": "僧问“如何是曹源一滴水”，法眼答“是曹源一滴水”。他不另起解释，不\n添加玄妙意义，只将问题原样归还。", "meaning": "有时最直接的回答，就是不在原物之外另造意义。", "score": 3}, {"id": "denglu-36", "collection": "灯录选粹", "collectionId": "denglu", "number": 36, "title": "药山不许看经", "source": "药山惟俨语录系统。", "story": "药山常被问为何自己看经却不许学人死看经。差别不在经本身，而在\n是否被文字转。", "meaning": "经典可以开眼，也可以遮眼，关键在用心。", "score": 4}, {"id": "denglu-37", "collection": "灯录选粹", "collectionId": "denglu", "number": 37, "title": "沩山踢倒净瓶", "source": "《无门关》第40则。", "story": "百丈放净瓶问众人：不得叫作净瓶，叫作什么？首座用语言答，沩山\n直接踢倒净瓶而去。", "meaning": "面对语言陷阱，最好的回答有时是把问题本身踢翻。", "score": 4}, {"id": "denglu-38", "collection": "灯录选粹", "collectionId": "denglu", "number": 38, "title": "香严击竹", "source": "《五灯会元》香严智闲传记。", "story": "香严多年苦参不得，后来扫地时瓦砾击竹作声，忽然大悟。一个日常\n声音成了悟入契机。", "meaning": "悟道不一定发生在讲堂，也可能发生在扫地一声中。", "score": 5}, {"id": "denglu-39", "collection": "灯录选粹", "collectionId": "denglu", "number": 39, "title": "香严上树", "source": "《无门关》第5则。", "story": "人悬在树上，口衔树枝，手脚不能攀，树下有人问祖师西来意。开口\n就坠落，不答又辜负来问。", "meaning": "语言和沉默都无路时，才是真关口。", "score": 5}, {"id": "denglu-40", "collection": "灯录选粹", "collectionId": "denglu", "number": 40, "title": "仰山插锹", "source": "《从容录》第15则。", "story": "沩山问仰山田中多少人，仰山插下锹子，叉手而立。看似没有答，其\n实把劳作现场整个呈现出来。", "meaning": "不必离开眼前动作另求答案。", "score": 3}, {"id": "denglu-41", "collection": "灯录选粹", "collectionId": "denglu", "number": 41, "title": "刘铁磨", "source": "《碧岩录》第24则、《从容录》第60则系统。", "story": "刘铁磨是禅门著名女禅者，机锋刚烈，与诸师往来不让须眉。她的故\n事常以“台山”“牸牛”等语境出现。", "meaning": "禅门看见地，不以性别身份定高下。", "score": 4}, {"id": "denglu-42", "collection": "灯录选粹", "collectionId": "denglu", "number": 42, "title": "婆子烧庵", "source": "禅林故事传统。", "story": "婆子供养一位僧人多年，后来派女子试探他的境界。僧人只表现出枯\n木寒岩式的冷漠，婆子认为他没有活泼禅心，便烧庵逐僧。", "meaning": "禅不是冷漠无情；枯寂也可能是病。", "score": 5}, {"id": "denglu-43", "collection": "灯录选粹", "collectionId": "denglu", "number": 43, "title": "庞居士好雪片片", "source": "《碧岩录》第42则系统；庞蕴居士语录。", "story": "庞居士见雪，说“好雪片片，不落别处”。每一片雪都落在它的位置，没\n有一片落错。", "meaning": "万物各安其位，当下圆满无差。", "score": 5}, {"id": "denglu-44", "collection": "灯录选粹", "collectionId": "denglu", "number": 44, "title": "庞居士一家", "source": "庞蕴居士传记。", "story": "庞居士一家皆有禅机，女儿灵照尤其机敏。传说临终时，一家人以自\n在方式面对生死，显示居士禅的洒脱。", "meaning": "禅不只在寺院，也可在家庭与日常生活中活出。", "score": 4}, {"id": "denglu-45", "collection": "灯录选粹", "collectionId": "denglu", "number": 45, "title": "维摩默然", "source": "《维摩诘经》；亦见《碧岩录》第84则、《从容录》第48则系统。", "story": "诸菩萨各说不二法门，轮到维摩居士时，他默然无言。文殊赞叹：这\n才是真入不二法门。", "meaning": "真正不二处，语言不得其门而入。", "score": 5}, {"id": "denglu-46", "collection": "灯录选粹", "collectionId": "denglu", "number": 46, "title": "丹霞烧佛", "source": "丹霞天然传记、《五灯会元》。", "story": "丹霞天寒，劈木佛取暖。院主责问，他说要烧取舍利；院主说木佛哪\n有舍利，他便反问既无舍利，何妨再烧两尊。\n禅宗公案大全：灯录选粹与传播索引\n11", "meaning": "破除对形式的执著，但传播时必须说明不是鼓励毁坏佛像。", "score": 5}, {"id": "denglu-47", "collection": "灯录选粹", "collectionId": "denglu", "number": 47, "title": "首山竹篦", "source": "《无门关》第43则。", "story": "首山拈起竹篦问众：叫作竹篦则触，不叫竹篦则背，到底叫作什么？", "meaning": "语言命名本身会把人带入两难。", "score": 4}, {"id": "denglu-48", "collection": "灯录选粹", "collectionId": "denglu", "number": 48, "title": "芭蕉拄杖", "source": "《无门关》第44则。", "story": "芭蕉说，你有拄杖，我给你拄杖；你无拄杖，我夺你拄杖。听者在有\n无之间都无处安身。", "meaning": "有无两边都要放下。", "score": 4}, {"id": "denglu-49", "collection": "灯录选粹", "collectionId": "denglu", "number": 49, "title": "竿头进步", "source": "《无门关》第46则。", "story": "百尺竿头的人，已经站到极高处，如何还能更进一步？古德要求他在\n无路处再进。", "meaning": "最高处若被执著，仍是障碍。", "score": 5}, {"id": "denglu-50", "collection": "灯录选粹", "collectionId": "denglu", "number": 50, "title": "牛过窗棂", "source": "《无门关》第38则。", "story": "水牯牛过窗棂，头角四蹄都过去了，为什么尾巴过不得？大部分已过\n关，最后一点却卡住。", "meaning": "最后一丝细微执著，往往最难放下。", "score": 5}, {"id": "denglu-51", "collection": "灯录选粹", "collectionId": "denglu", "number": 51, "title": "瑞岩唤主人公", "source": "《无门关》第12则。", "story": "瑞岩每天自唤“主人公”，又自己答“喏”，并提醒自己“惺惺著，莫受人\n瞒”。", "meaning": "每日把自己叫醒，是最朴素有效的修行。", "score": 5}, {"id": "denglu-52", "collection": "灯录选粹", "collectionId": "denglu", "number": 52, "title": "倩女离魂", "source": "《无门关》第35则。", "story": "倩女魂魄离身，身体与魂魄分处两地。禅师借此问：哪个才是真的倩\n女？", "meaning": "身份、自我、身心关系并不像日常想象中那么确定。", "score": 4}, {"id": "denglu-53", "collection": "灯录选粹", "collectionId": "denglu", "number": 53, "title": "女子出定", "source": "《无门关》第42则。", "story": "文殊不能令一女子出定，而罔明菩萨一弹指便能使其出定。高位菩萨\n与下方菩萨形成反差。", "meaning": "作用不可以地位高低简单判断。", "score": 3}, {"id": "denglu-54", "collection": "灯录选粹", "collectionId": "denglu", "number": 54, "title": "国师无缝塔", "source": "《碧岩录》第18则、《从容录》第85则。", "story": "国师临终要皇帝造无缝塔。皇帝问塔样，国师沉默良久，表示真正归\n处不可图画。", "meaning": "最终归宿无形无相。", "score": 3}, {"id": "denglu-55", "collection": "灯录选粹", "collectionId": "denglu", "number": 55, "title": "外道问佛", "source": "《无门关》第32则、《碧岩录》第65则。", "story": "外道问佛，不问有言，不问无言。世尊只是静坐，外道却赞叹得入。", "meaning": "沉默不是无答，有时正是不落两边的回答。", "score": 4}, {"id": "denglu-56", "collection": "灯录选粹", "collectionId": "denglu", "number": 56, "title": "二僧卷帘", "source": "《无门关》第26则。", "story": "法眼指帘，两个僧人同去卷帘，法眼却说“一得一失”。动作完全相同，\n结果却不同。", "meaning": "禅看的是当下心机，不只看外在动作。", "score": 4}, {"id": "denglu-57", "collection": "灯录选粹", "collectionId": "denglu", "number": 57, "title": "三座说法", "source": "《无门关》第25则。", "story": "仰山梦见自己在弥勒处坐第三座，被请说法，只说大乘法离四句绝百\n非。", "meaning": "真正说法不是多说，而是使人离开固定判断。", "score": 3}, {"id": "denglu-58", "collection": "灯录选粹", "collectionId": "denglu", "number": 58, "title": "干峰一路", "source": "《无门关》第48则。", "story": "僧问十方诸佛一路涅槃门，路头在哪里。干峰用拄杖划一划，说在这\n里。", "meaning": "路头不在远方，就在当下一划。", "score": 3}, {"id": "denglu-59", "collection": "灯录选粹", "collectionId": "denglu", "number": 59, "title": "傅大士讲经", "source": "傅大士传灯系统；亦见《碧岩录》相关拈提。", "story": "傅大士受请讲《金刚经》，登座后拍案一下便下座。有人解释说，大士\n已经把经讲完了。", "meaning": "真正讲经不一定靠文字铺陈，一拍也可尽显。", "score": 5}, {"id": "denglu-60", "collection": "灯录选粹", "collectionId": "denglu", "number": 60, "title": "十六开士入浴", "source": "《碧岩录》第78则系统。", "story": "十六开士入浴，因触水而悟入。洗浴这种普通身体经验，成为他们体\n会法性的契机。\n禅宗公案大全：灯录选粹与传播索引\n14", "meaning": "身体感受、日常行为也可以是法门。", "score": 4}];
+
+var currentDaily = null;
+var activeCollection = 'all';
+var activeScore = 0;
+var searchQuery = '';
+
+// Koan lookup map
+var koanMap = {};
+KOANS.forEach(function(k) { koanMap[k.id] = k; });
+
+// Ink wash canvas animation
+var canvas = document.getElementById('inkCanvas');
+var ctx = canvas.getContext('2d');
+var inkDrops = [];
+
+function resizeCanvas() {
+  canvas.width = window.innerWidth;
+  canvas.height = window.innerHeight;
+}
+resizeCanvas();
+window.addEventListener('resize', resizeCanvas);
+
+function InkDrop() {
+  this.reset = function() {
+    this.x = Math.random() * canvas.width;
+    this.y = Math.random() * canvas.height;
+    this.radius = Math.random() * 120 + 40;
+    this.opacity = Math.random() * 0.04 + 0.01;
+    this.speedX = (Math.random() - 0.5) * 0.15;
+    this.speedY = (Math.random() - 0.5) * 0.1;
+    this.life = 0;
+    this.maxLife = 400 + Math.random() * 600;
+    this.color = Math.random() > 0.6 ? '201,168,76' : '94,234,212';
+  };
+  this.update = function() {
+    this.x += this.speedX;
+    this.y += this.speedY;
+    this.life++;
+    if (this.life > this.maxLife) this.reset();
+    if (this.x < -200 || this.x > canvas.width + 200 || this.y < -200 || this.y > canvas.height + 200) this.reset();
+  };
+  this.draw = function() {
+    var fadePhase = Math.sin((this.life / this.maxLife) * Math.PI);
+    var alpha = this.opacity * fadePhase;
+    var gradient = ctx.createRadialGradient(this.x, this.y, 0, this.x, this.y, this.radius);
+    gradient.addColorStop(0, 'rgba(' + this.color + ',' + (alpha * 1.5) + ')');
+    gradient.addColorStop(0.5, 'rgba(' + this.color + ',' + (alpha * 0.5) + ')');
+    gradient.addColorStop(1, 'rgba(' + this.color + ',0)');
+    ctx.fillStyle = gradient;
+    ctx.beginPath();
+    ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+    ctx.fill();
+  };
+  this.reset();
+}
+
+for (var i = 0; i < 15; i++) inkDrops.push(new InkDrop());
+
+function animateInk() {
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  inkDrops.forEach(function(d) { d.update(); d.draw(); });
+  requestAnimationFrame(animateInk);
+}
+animateInk();
+
+// Floating Zen characters
+var zenChars = ['禅', '悟', '空', '心', '道', '法', '无', '境', '寂', '照', '一', '真', '如', '觉', '明', '静'];
+var particlesContainer = document.getElementById('particlesContainer');
+
+function createParticle() {
+  var el = document.createElement('div');
+  el.className = 'particle';
+  el.textContent = zenChars[Math.floor(Math.random() * zenChars.length)];
+  el.style.left = Math.random() * 90 + '%';
+  el.style.animationDuration = (Math.random() * 20 + 15) + 's';
+  el.style.animationDelay = Math.random() * 15 + 's';
+  el.style.fontSize = (Math.random() * 20 + 10) + 'px';
+  particlesContainer.appendChild(el);
+  setTimeout(function() { el.remove(); }, 35000);
+}
+
+for (var i = 0; i < 12; i++) createParticle();
+setInterval(createParticle, 3000);
+
+// Daily koan
+function setDailyKoan() {
+  var today = new Date();
+  var seed = today.getFullYear() * 10000 + (today.getMonth() + 1) * 100 + today.getDate();
+  var idx = seed % KOANS.length;
+  currentDaily = KOANS[idx];
+  document.getElementById('dailyTitle').textContent = currentDaily.title;
+  document.getElementById('dailyStory').textContent = currentDaily.story.length > 150 ? currentDaily.story.slice(0, 150) + '...' : currentDaily.story;
+  document.getElementById('dailyCollection').textContent = currentDaily.collection;
+  var stars = '';
+  for (var i = 0; i < currentDaily.score; i++) stars += '★';
+  for (var i = currentDaily.score; i < 5; i++) stars += '☆';
+  document.getElementById('dailyScore').textContent = stars;
+}
+
+function randomDaily() {
+  var idx = Math.floor(Math.random() * KOANS.length);
+  currentDaily = KOANS[idx];
+  document.getElementById('dailyTitle').textContent = currentDaily.title;
+  document.getElementById('dailyStory').textContent = currentDaily.story.length > 150 ? currentDaily.story.slice(0, 150) + '...' : currentDaily.story;
+  document.getElementById('dailyCollection').textContent = currentDaily.collection;
+  var stars = '';
+  for (var i = 0; i < currentDaily.score; i++) stars += '★';
+  for (var i = currentDaily.score; i < 5; i++) stars += '☆';
+  document.getElementById('dailyScore').textContent = stars;
+  document.getElementById('top').scrollIntoView({ behavior: 'smooth' });
+  showToast('已为你随机推荐一则公案');
+}
+
+// Daily card click
+document.getElementById('dailyCard').addEventListener('click', function() {
+  if (currentDaily) openKoanDetail(currentDaily.id);
+});
+
+// Filters
+function renderCollectionFilters() {
+  var container = document.getElementById('collectionFilters');
+  var collections = [];
+  KOANS.forEach(function(k) {
+    if (collections.indexOf(k.collection) === -1) collections.push(k.collection);
+  });
+  var html = '<button class="filter-btn active" data-col="all">全部</button>';
+  collections.forEach(function(c) {
+    html += '<button class="filter-btn" data-col="' + c + '">' + c + '</button>';
+  });
+  container.innerHTML = html;
+  
+  container.querySelectorAll('.filter-btn').forEach(function(btn) {
+    btn.addEventListener('click', function() {
+      setCollection(this.getAttribute('data-col'));
+    });
+  });
+}
+
+function renderScoreFilters() {
+  var container = document.getElementById('scoreFilters');
+  var html = '<button class="score-btn active" data-sc="0">全</button>';
+  for (var i = 5; i >= 1; i--) {
+    html += '<button class="score-btn" data-sc="' + i + '">' + i + '</button>';
+  }
+  container.innerHTML = html;
+  
+  container.querySelectorAll('.score-btn').forEach(function(btn) {
+    btn.addEventListener('click', function() {
+      setScore(parseInt(this.getAttribute('data-sc')));
+    });
+  });
+}
+
+function setCollection(c) {
+  activeCollection = c;
+  document.querySelectorAll('#collectionFilters .filter-btn').forEach(function(b) { b.classList.remove('active'); });
+  document.querySelector('#collectionFilters [data-col="' + c + '"]').classList.add('active');
+  filterKoans();
+}
+
+function setScore(s) {
+  activeScore = s;
+  document.querySelectorAll('#scoreFilters .score-btn').forEach(function(b) { b.classList.remove('active'); });
+  document.querySelector('#scoreFilters [data-sc="' + s + '"]').classList.add('active');
+  filterKoans();
+}
+
+function filterKoans() {
+  searchQuery = document.getElementById('searchInput').value.toLowerCase();
+  renderKoans();
+}
+
+function getFilteredKoans() {
+  return KOANS.filter(function(k) {
+    if (activeCollection !== 'all' && k.collection !== activeCollection) return false;
+    if (activeScore > 0 && k.score !== activeScore) return false;
+    if (searchQuery) {
+      var q = searchQuery;
+      return (k.title && k.title.toLowerCase().indexOf(q) !== -1) ||
+             (k.story && k.story.toLowerCase().indexOf(q) !== -1) ||
+             (k.meaning && k.meaning.toLowerCase().indexOf(q) !== -1) ||
+             (k.source && k.source.toLowerCase().indexOf(q) !== -1) ||
+             (k.collection && k.collection.toLowerCase().indexOf(q) !== -1);
+    }
+    return true;
+  });
+}
+
+function renderKoans() {
+  var filtered = getFilteredKoans();
+  var grid = document.getElementById('koansGrid');
+  var countEl = document.getElementById('resultsCount');
+  
+  countEl.textContent = '共 ' + filtered.length + ' 则公案';
+  
+  var html = '';
+  filtered.forEach(function(k) {
+    var scoreDots = '';
+    for (var i = 0; i < 5; i++) {
+      var cls = i < k.score ? (k.score >= 4 ? 'filled high' : 'filled') : '';
+      scoreDots += '<div class="score-dot ' + cls + '"></div>';
+    }
+    var storyPreview = k.story.length > 100 ? k.story.slice(0, 100) + '...' : k.story;
+    html += '<div class="koan-card" data-koan-id="' + k.id + '">' +
+      '<div class="card-header">' +
+        '<span class="card-num">#' + k.number + '</span>' +
+        '<div class="card-score">' + scoreDots + '</div>' +
+      '</div>' +
+      '<h3>' + escapeHtml(k.title) + '</h3>' +
+      '<p class="card-story">' + escapeHtml(storyPreview) + '</p>' +
+      '<div class="card-collection">' + escapeHtml(k.collection) + '</div>' +
+    '</div>';
+  });
+  grid.innerHTML = html;
+  
+  // Add click handlers to all cards
+  grid.querySelectorAll('.koan-card').forEach(function(card) {
+    card.addEventListener('click', function() {
+      var kid = this.getAttribute('data-koan-id');
+      openKoanDetail(kid);
+    });
+  });
+}
+
+function escapeHtml(str) {
+  var div = document.createElement('div');
+  div.appendChild(document.createTextNode(str));
+  return div.innerHTML;
+}
+
+function openKoanDetail(id) {
+  var k = koanMap[id];
+  if (!k) return;
+  
+  var scoreDots = '';
+  for (var i = 0; i < 5; i++) {
+    var cls = i < k.score ? 'filled' : '';
+    scoreDots += '<div class="dot ' + cls + '"></div>';
+  }
+  
+  var modalHtml = '<div class="modal-overlay">' +
+    '<div class="modal">' +
+      '<button class="modal-close" id="modalCloseBtn">✕</button>' +
+      '<div class="modal-collection">' + escapeHtml(k.collection) + ' · 第' + k.number + '则</div>' +
+      '<h2>' + escapeHtml(k.title) + '</h2>' +
+      '<div class="modal-source">' + escapeHtml(k.source || '') + '</div>' +
+      '<div class="modal-section">' +
+        '<h4>故事梗概</h4>' +
+        '<p>' + escapeHtml(k.story) + '</p>' +
+      '</div>' +
+      '<div class="modal-section">' +
+        '<h4>故事意义</h4>' +
+        '<p>' + escapeHtml(k.meaning || '——') + '</p>' +
+      '</div>' +
+      '<div class="modal-score">' +
+        '<span style="color:var(--text-dim);font-size:12px;letter-spacing:2px;">传播评分</span>' +
+        '<div class="dots">' + scoreDots + '</div>' +
+        '<span style="color:var(--gold-dim);font-size:13px;">' + k.score + '/5</span>' +
+      '</div>' +
+    '</div>' +
+  '</div>';
+  
+  document.getElementById('modalContainer').innerHTML = modalHtml;
+  document.body.style.overflow = 'hidden';
+  
+  // Close handlers
+  document.getElementById('modalCloseBtn').addEventListener('click', closeModal);
+  document.querySelector('.modal-overlay').addEventListener('click', function(e) {
+    if (e.target === this) closeModal();
+  });
+}
+
+function closeModal() {
+  document.getElementById('modalContainer').innerHTML = '';
+  document.body.style.overflow = '';
+}
+
+function showToast(msg) {
+  var toast = document.createElement('div');
+  toast.className = 'toast';
+  toast.textContent = msg;
+  document.body.appendChild(toast);
+  setTimeout(function() { toast.remove(); }, 2200);
+}
+
+function scrollToTop() {
+  document.getElementById('top').scrollIntoView({ behavior: 'smooth' });
+}
+
+// Keyboard shortcuts
+document.addEventListener('keydown', function(e) {
+  if (e.key === 'Escape') closeModal();
+  if ((e.ctrlKey || e.metaKey) && e.key === 'k') {
+    e.preventDefault();
+    document.querySelector('.search-input').focus();
+  }
+  if (e.key === 'r' && !e.ctrlKey && !e.metaKey && document.activeElement === document.body) {
+    randomDaily();
+  }
+});
+
+// Init
+setDailyKoan();
+renderCollectionFilters();
+renderScoreFilters();
+renderKoans();
+</script>
+</body>
+</html>
